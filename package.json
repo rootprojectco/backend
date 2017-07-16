@@ -14,7 +14,7 @@
     "url": "git+https://github.com/rootprojectco/backend.git"
   },
   "author": "Alex Bazhanau <bazhanau@outlook.com>",
-  "license": "ISC",
+  "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/rootprojectco/backend/issues"
   },
