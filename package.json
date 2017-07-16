@@ -1,0 +1,26 @@
+{
+  "name": "rootproject-backend",
+  "version": "0.0.1",
+  "description": "Ethereum contracts for rootproject, a crowdfunding platform for social projects powered by a crypto currency.",
+  "main": "truffle.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rootprojectco/backend.git"
+  },
+  "author": "Alex Bazhanau <bazhanau@outlook.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rootprojectco/backend/issues"
+  },
+  "homepage": "https://github.com/rootprojectco/backend#readme",
+  "devDependencies": {
+    "chai" : "^4.1.0",
+    "chai-as-promised" : "^7.1.1"
+  }
+}

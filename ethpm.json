@@ -1,0 +1,14 @@
+{
+  "package_name": "rootproject-backend",
+  "version": "0.0.1",
+  "description": "Ethereum contracts for rootproject, a crowdfunding platform for social projects powered by a crypto currency.",
+  "authors": [
+    "Alex Bazhanau <bazhanau@outlook.com>"
+  ],
+  "keywords": [
+  ],
+  "dependencies": {
+    "owned": "^0.0.1"
+  },
+  "license": "MIT"
+}
