@@ -1,6 +1,6 @@
 pragma solidity ^0.4.10;
 
-contract PensionFund {
+contract PensionFundRelease {
     address[] public validators;
     address public worker;
     uint public firstPaymentPercent;
@@ -9,7 +9,7 @@ contract PensionFund {
     uint public reccurentPaymentPercent;
 
     struct Vote {
-        bool isApprove;
+        bool approve;
         address validator;
         string justification;
     }
@@ -17,9 +17,9 @@ contract PensionFund {
     mapping (address => uint) public voteIndex;
     Vote[] public votes;
 
-    event Voted(bool isApprove, address validator, string justification);
+    event Voted(bool approve, address validator, string justification);
 
-    function PensionFund(
+    function PensionFundRelease(
         address[] _validators,
         address _worker,
         uint _firstPaymentPercent,
@@ -27,6 +27,8 @@ contract PensionFund {
         uint _reccurentPaymentInterval,
         uint _reccurentPaymentPercent
     ){
+        assert(_validators.length > 0);
+        assert(_worker != 0x0);
         assert(_firstPaymentPercent <= 100);
         assert(_reccurentPaymentPercent <= 100);
 
@@ -49,9 +51,9 @@ contract PensionFund {
         _;
     }
 
-    function vote(bool isApprove, string justification) onlyValidator returns (uint index) {
+    function vote(bool approve, string justification) onlyValidator returns (uint index) {
         index = voteIndex[msg.sender];
-        Vote memory vote = Vote(isApprove, msg.sender, justification);
+        Vote memory vote = Vote(approve, msg.sender, justification);
         if(index == 0){
             index = votes.length;
             voteIndex[msg.sender] = index;
@@ -61,7 +63,6 @@ contract PensionFund {
             votes[index] = vote;
         }
 
-        Voted(isApprove, msg.sender, justification);
+        Voted(approve, msg.sender, justification);
     }
-
 }

@@ -3,25 +3,25 @@ var chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 chai.should();
 
-var PensionFund = artifacts.require("./PensionFund.sol");
+var PensionFundRelease = artifacts.require("./PensionFundRelease.sol");
 
-contract('PensionFund', function(accounts) {
+contract('PensionFundRelease', function(accounts) {
   it("should return firstPaymentPercent", function() {
-    return PensionFund.deployed().then(function(instance) {
+    return PensionFundRelease.deployed().then(function(instance) {
       return instance.firstPaymentPercent.call(accounts[0]);
     }).then(function(percent) {
       return percent.toNumber();
     }).should.eventually.equal(100);
   });
   it("should return validators", function() {
-    return PensionFund.deployed().then(function(instance) {
+    return PensionFundRelease.deployed().then(function(instance) {
       return instance.validators.call(0);
     }).should.eventually.equal(accounts[0]) ;
   });
   
   it("should allow validators to vote", function() {
     var instance;
-    return PensionFund.deployed().then(function(inst) {
+    return PensionFundRelease.deployed().then(function(inst) {
       instance = inst;
       return instance.vote(true, "justification", {from: accounts[0]});
     }).then(function() {
@@ -34,7 +34,7 @@ contract('PensionFund', function(accounts) {
   });
 
   it("should not allow non-validators to vote", function() {
-    return PensionFund.deployed().then(function(inst) {
+    return PensionFundRelease.deployed().then(function(inst) {
       return instance.vote(true, "justification", {from: accounts[3]});
     }).should.be.rejected;
   });
