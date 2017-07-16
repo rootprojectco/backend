@@ -65,4 +65,22 @@ contract PensionFundRelease {
 
         Voted(approve, msg.sender, justification);
     }
+
+    function isReleaseApproved() constant returns (bool approved){
+        uint num = 0;
+        for (uint i = 1; i < votes.length; i++) { //skip dummy vote
+            if (votes[i].approve) num++;
+        }
+
+        return num == validators.length;
+    }
+
+    function isBurnApproved() constant returns (bool approved){
+        uint num = 0;
+        for (uint i = 1; i < votes.length; i++) { //skip dummy vote
+            if (!votes[i].approve) num++;
+        }
+
+        return num == validators.length;
+    }
 }
