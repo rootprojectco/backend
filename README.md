@@ -4,10 +4,6 @@ Rootproject is a crowdfunding platform for social projects powered by a crypto c
 
 Website: https://rootproject.co
 
-There are 2 smart contracts:
-
-Smart Contract I: Project Validation
-
-Smart Contract II: Medium-term "Pension Fund"
+Smart Contract I: Medium-term "Pension Fund"
 
 
