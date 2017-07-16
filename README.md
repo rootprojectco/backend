@@ -1,9 +1,9 @@
-# back-end: RootProject Smart Contracts
+# back-end: RootProject Smart Contracts 
 
-Rootproject is a crowdfunding platform for social projects powered by a crypto currency.
+RootProject is a cryptocurrency-powered crowdfunding platform for social projects.
 
 Website: https://rootproject.co
 
-Smart Contract I: Medium-term "Pension Fund"
+Pension Fund Release:
 
 
