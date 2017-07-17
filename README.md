@@ -78,13 +78,13 @@ Triggered when new vote is deployed.
 
 
 ### Prerequisites
-* 
-* 
-
+* Node.js v7.6.0+
+* truffle v3.2.2+
 
 
 ## Collaborators
-* 
+* **[Alex Bazhanau](https://github.com/frostiq)**
+
 
 ## License
 
