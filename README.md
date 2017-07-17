@@ -6,11 +6,11 @@ Website: https://rootproject.co
 
 There are 2 smart contracts:
 
-Smart Contract I: Project Validation
+Smart Contract I: ProjectValidation
 
 ### Under construction.
 
-Smart Contract II: Medium-term "Pension Fund"
+Smart Contract II: PensionFundRelease
 
 ## Specification
 
