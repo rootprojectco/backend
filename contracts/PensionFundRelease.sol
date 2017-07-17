@@ -1,12 +1,15 @@
 pragma solidity ^0.4.10;
 
+import "tokens/Token.sol";
+
 contract PensionFundRelease {
     address[] public validators;
     address public worker;
     uint public firstPaymentPercent;
-    uint public firstPaymentDate;
+    uint public firstPaymentTime;
     uint public reccurentPaymentInterval;
     uint public reccurentPaymentPercent;
+    Token public roots;
 
     struct Vote {
         bool approve;
@@ -16,41 +19,47 @@ contract PensionFundRelease {
 
     mapping (address => uint) public voteIndex;
     Vote[] public votes;
+    bool public firtPaymentReleased = false;
 
     event Voted(bool approve, address validator, string justification);
+    event Released(uint amount, address worker);
 
     function PensionFundRelease(
         address[] _validators,
         address _worker,
         uint _firstPaymentPercent,
-        uint _firstPaymentDate,
+        uint _firstPaymentTime,
         uint _reccurentPaymentInterval,
-        uint _reccurentPaymentPercent
+        uint _reccurentPaymentPercent,
+        address _rootsAddress
     ){
-        assert(_validators.length > 0);
-        assert(_worker != 0x0);
-        assert(_firstPaymentPercent <= 100);
-        assert(_reccurentPaymentPercent <= 100);
+        require(_validators.length > 0);
+        require(_worker != 0x0);
+        require(_firstPaymentPercent <= 100);
+        require(_reccurentPaymentPercent <= 100);
 
         validators = _validators;
         worker = _worker;
         firstPaymentPercent = _firstPaymentPercent;
-        firstPaymentDate = _firstPaymentDate;
+        firstPaymentTime = _firstPaymentTime;
         reccurentPaymentInterval = _reccurentPaymentInterval;
         reccurentPaymentPercent = _reccurentPaymentPercent;
+        roots = Token(_rootsAddress);
 
         votes.push(Vote(false, 0x0, "")); //first dummy vote
     }
 
+    //ensure that only validator can perform the action
     modifier onlyValidator(){
         bool isValidator = false;
         for (uint i = 0; i < validators.length; i++) {
             isValidator = isValidator || (msg.sender == validators[i]);
         }
-        assert(isValidator);
+        require(isValidator);
         _;
     }
 
+    //vote for the fund release or burn
     function vote(bool approve, string justification) onlyValidator returns (uint index) {
         index = voteIndex[msg.sender];
         Vote memory vote = Vote(approve, msg.sender, justification);
@@ -66,6 +75,7 @@ contract PensionFundRelease {
         Voted(approve, msg.sender, justification);
     }
 
+    // check wether validators have approved the release
     function isReleaseApproved() constant returns (bool approved){
         uint num = 0;
         for (uint i = 1; i < votes.length; i++) { //skip dummy vote
@@ -75,6 +85,7 @@ contract PensionFundRelease {
         return num == validators.length;
     }
 
+    // check wether validators have decided to burn the fund
     function isBurnApproved() constant returns (bool approved){
         uint num = 0;
         for (uint i = 1; i < votes.length; i++) { //skip dummy vote
@@ -82,5 +93,29 @@ contract PensionFundRelease {
         }
 
         return num == validators.length;
+    }
+
+    // calculate the amount of payment
+    function getPaymentAmount() constant returns (uint amount){
+        if(!firtPaymentReleased) return balance() * 100 / firstPaymentPercent;
+        return 0;
+    }
+
+    // get current fund balance in ROOTs
+    function balance() constant returns (uint amount){
+        return roots.balanceOf(this);
+    }
+
+    // release the fund
+    function releaseRoots() returns (uint releasedAmount){
+        require(isReleaseApproved());
+        require(now > firstPaymentTime);
+
+        releasedAmount = getPaymentAmount();
+        if(releasedAmount > 0){
+            firtPaymentReleased = true;
+            roots.transfer(worker, releasedAmount);
+            Released(releasedAmount, worker);
+        }
     }
 }

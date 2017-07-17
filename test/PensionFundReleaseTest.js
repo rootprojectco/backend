@@ -3,32 +3,32 @@ var chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 chai.should();
 
+var Token = artifacts.require("tokens/StandardToken.sol");
 var PensionFundRelease = artifacts.require("./PensionFundRelease.sol");
-
 
 contract('PensionFundRelease', function(accounts) {
   var validators = [accounts[0], accounts[1]];
   var worker = accounts[2];
   var unauthorized = accounts[3];
 
-  var deployParams = [[accounts[0], accounts[1]], accounts[2], 100, 23123434, 999, 100]
+  var deployParams = [validators, worker, 100, 1500243470, 604800, 100, 0x0]
 
   it("should return firstPaymentPercent", function() {
-    return PensionFundRelease.deployed().then(function(instance) {
+    return PensionFundRelease.new.apply(this, deployParams).then(function(instance) {
       return instance.firstPaymentPercent.call();
     }).then(function(percent) {
       return percent.toNumber();
     }).should.eventually.equal(100);
   });
   it("should return validators", function() {
-    return PensionFundRelease.deployed().then(function(instance) {
+    return PensionFundRelease.new.apply(this, deployParams).then(function(instance) {
       return instance.validators.call(0);
     }).should.eventually.equal(validators[0]) ;
   });
   
   it("should allow validators to vote", function() {
     var instance;
-    return PensionFundRelease.deployed().then(function(inst) {
+    return PensionFundRelease.new.apply(this, deployParams).then(function(inst) {
       instance = inst;
       return instance.vote(true, "justification", {from: validators[0]});
     }).then(function() {
@@ -41,7 +41,7 @@ contract('PensionFundRelease', function(accounts) {
   });
 
   it("should not allow non-validators to vote", function() {
-    return PensionFundRelease.deployed().then(function(inst) {
+    return PensionFundRelease.new.apply(this, deployParams).then(function(inst) {
       return instance.vote(true, "justification", {from: unauthorized});
     }).should.be.rejected;
   });
@@ -80,7 +80,7 @@ contract('PensionFundRelease', function(accounts) {
     }).should.be.eventually.equal(true);
   });
 
-  it("should not allow burn if not all validators approved release", function() {
+  it("should not allow burn if not all validators rejected release", function() {
     var instance;
     return PensionFundRelease.new.apply(this, deployParams).then(function(inst) {
       instance = inst;
@@ -88,5 +88,20 @@ contract('PensionFundRelease', function(accounts) {
     }).then(function() {
       return instance.isBurnApproved.call();
     }).should.be.eventually.equal(false);
+  });
+
+  // TODO: fix firtPaymentReleased
+  xit("should release roots if all conditions met", function() {
+    var instance;
+    return PensionFundRelease.new.apply(this, deployParams).then(function(inst) {
+      instance = inst;
+      return instance.vote(true, "justification", {from: validators[0]});
+    }).then(function() {
+      return instance.vote(true, "justification", {from: validators[1]});
+    }).then(function() {
+      return instance.releaseRoots({from: worker});
+    }).then(function() {
+      return instance.firtPaymentReleased.call();
+    }).should.be.eventually.equal(true);
   });
 });
