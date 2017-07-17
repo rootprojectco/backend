@@ -5,10 +5,9 @@ Rootproject is a crowdfunding platform for social projects powered by a crypto c
 Website: https://rootproject.co
 
 ### Smart Contracts
-There are 2 main smart contracts:
+Smart Contract I: ProjectValidation - validators check whether project has been successfuly completed
 
-Smart Contract I: ProjectValidation
-Smart Contract II: PensionFundRelease
+Smart Contract II: PensionFundRelease - "medium-term pension fund", which freezes funds for a custom period of time, and releases funds continously after approvals of validators.
 
 ### Under construction.
 
