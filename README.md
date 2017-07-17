@@ -9,6 +9,10 @@ There are 2 smart contracts:
 
 Smart Contract I: Project Validation
 
+
+
+Smart Contract II: Medium-term "Pension Fund"
+
 ## Specification
 
 
@@ -76,20 +80,12 @@ Triggered when new vote is deployed.
 ### Prerequisites
 * 
 * 
-* 
-* 
 
 
 
 ## Collaborators
-*
-*
-*
-*
+* 
+
 ## License
 
 rootProject is open source and distributed under the GNU GPL v.3
-
-Smart Contract II: Medium-term "Pension Fund"
-
-
