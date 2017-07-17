@@ -28,7 +28,7 @@ function PensionFundRelease(
         uint _reccurentPaymentInterval,
 
         uint _reccurentPaymentPercent
-
+ 
     )
 ```
 Processes pension fund to be released.
@@ -71,7 +71,7 @@ Triggered when new vote is deployed.
 <br>
 ### Prerequisites
 * Node.js v7.6.0+
-*truffle v3.2.2+
+* truffle v3.2.2+
 ## Collaborators
 * **[Alex Bazhanau](https://github.com/frostiq)**
 
