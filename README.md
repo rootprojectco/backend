@@ -1,9 +1,10 @@
-# back-end: RootProject Smart Contracts
+# RootProject Contracts pre-alpha v0.1
 
 Rootproject is a crowdfunding platform for social projects powered by a crypto currency.
 
 Website: https://rootproject.co
 
+### Smart Contracts
 There are 2 main smart contracts:
 
 Smart Contract I: ProjectValidation
