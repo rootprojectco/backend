@@ -20,49 +20,49 @@ Smart Contract II: PensionFundRelease - "medium-term pension fund", which freeze
 function vote(bool approve, string justification) onlyValidator returns (uint index)
 ```
 Generates a vote for the fund to release or burn, and it's justification.
-
-
-
+<br>
+<br>
+<br>
 **isReleaseApproved**
 ```cs
 function isReleaseApproved() constant returns (bool approved)
 ```
 Checks if release approved by all validators.
-
-
-
+<br>
+<br>
+<br>
 **isBurnApproved**
 ```cs
 function isBurnApproved() constant returns (bool approved)
 ```
 Checks if burn approved by all validators.
-
-
-
+<br>
+<br>
+<br>
 **getPaymentAmount**
 ```cs
 function getPaymentAmount() constant returns (uint amount)
 ```
 Executes payment calculation.
-
-
-
+<br>
+<br>
+<br>
 **balance**
 ```cs
 function balance() constant returns (uint amount)
 ```
 Returns current fund balance in ROOTs.
-
-
-
+<br>
+<br>
+<br>
 **releaseRoots**
 ```cs
 function releaseRoots() returns (uint releasedAmount)
 ```
 Executes fund release.
-
-
-
+<br>
+<br>
+<br>
 ### Events
 
 **Voted**
@@ -70,17 +70,17 @@ Executes fund release.
 event Voted(bool approve, address validator, string justification)
 ```
 Triggered when new vote is deployed.
-
-
-
+<br>
+<br>
+<br>
 **Released**
 ```cs
 event Released(uint amount, address worker)
 ```
 Triggered when fund is released.
-
-
-
+<br>
+<br>
+<br>
 ### Requirements
 
 *General:*
