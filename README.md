@@ -105,7 +105,7 @@ To run the test, execute the following commands from the project's root folder:
 
 ## Collaborators
 * **[Alex Bazhanau](https://github.com/frostiq)**
-
+* **[Anton Kraminkin](https://github.com/akraminkin)**
 
 
 # License
