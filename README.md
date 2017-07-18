@@ -81,19 +81,21 @@ Triggered when fund is released.
 <br>
 <br>
 <br>
-### Requirements
+## Requirements
 
-*General:*
+### General:
+
 * Node.js v7.6.0+
 * truffle v3.2.2+
 * testrpc v3.0.5+
 
-*Requirements installation with npm:*
+### Requirements installation steps:
+
 * npm install -g truffle
 * npm install -g ethereumjs-testrpc
 * npm install
 * truffle install
-* truffle test
+
 
 ## Testing
 
@@ -106,7 +108,7 @@ To run the test, execute the following commands from the project's root folder:
 
 
 
-## License
+# License
 
-RootProject is open source and distributed under the GNU GPL v.3
+All smart contracts are open source and distributed under the GNU GPL v.3
 
