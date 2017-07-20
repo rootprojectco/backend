@@ -1,4 +1,4 @@
-var Token = artifacts.require("tokens/StandardToken.sol");
+var Token = artifacts.require("zeppelin-solidity/contracts/token/BasicToken.sol");
 var PensionFundRelease = artifacts.require("./PensionFundRelease.sol");
 
 module.exports = function(deployer, network, accounts) {

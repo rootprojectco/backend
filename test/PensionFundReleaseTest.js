@@ -3,7 +3,7 @@ var chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 chai.should();
 
-var Token = artifacts.require("tokens/StandardToken.sol");
+var Token = artifacts.require("zeppelin-solidity/contracts/token/BasicToken.sol");
 var PensionFundRelease = artifacts.require("./PensionFundRelease.sol");
 
 contract('PensionFundRelease', function(accounts) {

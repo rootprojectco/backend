@@ -1,6 +1,6 @@
 pragma solidity ^0.4.10;
 
-import "tokens/Token.sol";
+import "zeppelin-solidity/contracts/token/BasicToken.sol";
 
 contract PensionFundRelease {
     address[] public validators;
@@ -9,7 +9,7 @@ contract PensionFundRelease {
     uint public firstPaymentTime;
     uint public reccurentPaymentInterval;
     uint public reccurentPaymentPercent;
-    Token public roots;
+    BasicToken public roots;
 
     struct Vote {
         bool approve;
@@ -44,7 +44,7 @@ contract PensionFundRelease {
         firstPaymentTime = _firstPaymentTime;
         reccurentPaymentInterval = _reccurentPaymentInterval;
         reccurentPaymentPercent = _reccurentPaymentPercent;
-        roots = Token(_rootsAddress);
+        roots = BasicToken(_rootsAddress);
 
         votes.push(Vote(false, 0x0, "")); //first dummy vote
     }
