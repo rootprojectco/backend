@@ -9,4 +9,4 @@ install:
 - npm install -g truffle ethereumjs-testrpc
 
 script:
-- npm test
+- testrpc & npm test
