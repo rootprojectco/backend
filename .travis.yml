@@ -12,3 +12,4 @@ install:
 
 script:
 - testrpc &> /dev/null & npm test
+- solium --dir .

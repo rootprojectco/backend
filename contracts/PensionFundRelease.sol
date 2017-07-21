@@ -3,6 +3,7 @@ pragma solidity ^0.4.10;
 import "zeppelin-solidity/contracts/token/SimpleToken.sol";
 import "zeppelin-solidity/contracts/token/ERC20Basic.sol";
 
+
 contract PensionFundRelease {
     address[] public validators;
     address public worker;
@@ -33,7 +34,7 @@ contract PensionFundRelease {
         uint _reccurentPaymentInterval,
         uint8 _reccurentPaymentPercent,
         address _rootsAddress
-    ){
+    ) {
         require(_validators.length > 0);
         require(_worker != 0x0);
         require(_firstPaymentPercent <= 100);
@@ -51,7 +52,7 @@ contract PensionFundRelease {
     }
 
     //ensure that only validator can perform the action
-    modifier onlyValidator(){
+    modifier onlyValidator() {
         bool isValidator = false;
         for (uint i = 0; i < validators.length; i++) {
             isValidator = isValidator || (msg.sender == validators[i]);
@@ -64,12 +65,11 @@ contract PensionFundRelease {
     function vote(bool approve, string justification) onlyValidator returns (uint index) {
         index = voteIndex[msg.sender];
         Vote memory vote = Vote(approve, msg.sender, justification);
-        if(index == 0){
+        if (index == 0) {
             index = votes.length;
             voteIndex[msg.sender] = index;
             votes.push(vote);
-        }
-        else{
+        } else {
             votes[index] = vote;
         }
 
@@ -77,43 +77,45 @@ contract PensionFundRelease {
     }
 
     // check wether validators have approved the release
-    function isReleaseApproved() constant returns (bool approved){
+    function isReleaseApproved() constant returns (bool approved) {
         uint num = 0;
         for (uint i = 1; i < votes.length; i++) { //skip dummy vote
-            if (votes[i].approve) num++;
+            if (votes[i].approve)
+                num++;
         }
 
         return num == validators.length;
     }
 
     // check wether validators have decided to burn the fund
-    function isBurnApproved() constant returns (bool approved){
+    function isBurnApproved() constant returns (bool approved) {
         uint num = 0;
         for (uint i = 1; i < votes.length; i++) { //skip dummy vote
-            if (!votes[i].approve) num++;
+            if (!votes[i].approve)
+                num++;
         }
 
         return num == validators.length;
     }
 
     // calculate the amount of payment
-    function getPaymentAmount() constant returns (uint amount){
-        if(!firtPaymentReleased) return balance() * 100 / firstPaymentPercent;
+    function getPaymentAmount() constant returns (uint amount) {
+        if (!firtPaymentReleased) return balance() * 100 / firstPaymentPercent;
         return 0;
     }
 
     // get current fund balance in ROOTs
-    function balance() constant returns (uint amount){
+    function balance() constant returns (uint amount) {
         return roots.balanceOf(this);
     }
 
     // release the fund
-    function releaseRoots() returns (uint releasedAmount){
+    function releaseRoots() returns (uint releasedAmount) {
         require(isReleaseApproved());
         require(now > firstPaymentTime);
 
         releasedAmount = getPaymentAmount();
-        if(releasedAmount > 0){
+        if (releasedAmount > 0) {
             firtPaymentReleased = true;
             roots.transfer(worker, releasedAmount);
             Released(releasedAmount, worker);
