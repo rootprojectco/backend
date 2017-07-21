@@ -103,7 +103,7 @@ var PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
       fund = await PensionFundRelease.new.apply(
         this,
         deployParams(
-          FIRST_PAYMENT_TIME + TIME_INCREMENT,
+          firstPaymentTime + TIME_INCREMENT,
           FIRST_PAYMENT_PERCENT,
           token.address,
           PAYOUT_PERCENT
@@ -148,7 +148,7 @@ var PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
       fund = await PensionFundRelease.new.apply(
         this,
         deployParams(
-          FIRST_PAYMENT_TIME,
+          firstPaymentTime,
           firstPaymentPercent,
           token.address,
           PAYOUT_PERCENT
