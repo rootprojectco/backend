@@ -100,7 +100,9 @@ contract PensionFundRelease {
 
     // calculate the amount of payment
     function getPaymentAmount() constant returns (uint amount) {
-        if (!firtPaymentReleased) return balance() * 100 / firstPaymentPercent;
+        if (!firtPaymentReleased) 
+            return balance() * 100 / firstPaymentPercent;
+        
         return 0;
     }
 
