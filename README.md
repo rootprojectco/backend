@@ -91,17 +91,14 @@ Triggered when fund is released.
 
 ### Requirements installation steps:
 
-* npm install -g truffle
-* npm install -g ethereumjs-testrpc
+* npm install -g truffle ethereumjs-testrpc
 * npm install
 * truffle install
-
 
 ## Testing
 
 To run the test, execute the following commands from the project's root folder:
-* npm start testrpc
-* npm test
+* testrpc &> /dev/null & npm test
 
 ## Collaborators
 * **[Alex Bazhanau](https://github.com/frostiq)**
