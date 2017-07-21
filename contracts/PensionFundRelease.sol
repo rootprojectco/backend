@@ -1,15 +1,16 @@
 pragma solidity ^0.4.10;
 
-import "tokens/Token.sol";
+import "zeppelin-solidity/contracts/token/SimpleToken.sol";
+import "zeppelin-solidity/contracts/token/ERC20Basic.sol";
 
 contract PensionFundRelease {
     address[] public validators;
     address public worker;
-    uint public firstPaymentPercent;
+    uint8 public firstPaymentPercent;
     uint public firstPaymentTime;
     uint public reccurentPaymentInterval;
-    uint public reccurentPaymentPercent;
-    Token public roots;
+    uint8 public reccurentPaymentPercent;
+    ERC20Basic public roots;
 
     struct Vote {
         bool approve;
@@ -27,10 +28,10 @@ contract PensionFundRelease {
     function PensionFundRelease(
         address[] _validators,
         address _worker,
-        uint _firstPaymentPercent,
+        uint8 _firstPaymentPercent,
         uint _firstPaymentTime,
         uint _reccurentPaymentInterval,
-        uint _reccurentPaymentPercent,
+        uint8 _reccurentPaymentPercent,
         address _rootsAddress
     ){
         require(_validators.length > 0);
@@ -44,7 +45,7 @@ contract PensionFundRelease {
         firstPaymentTime = _firstPaymentTime;
         reccurentPaymentInterval = _reccurentPaymentInterval;
         reccurentPaymentPercent = _reccurentPaymentPercent;
-        roots = Token(_rootsAddress);
+        roots = ERC20Basic(_rootsAddress);
 
         votes.push(Vote(false, 0x0, "")); //first dummy vote
     }
