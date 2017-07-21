@@ -35,7 +35,7 @@ var PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
 
     beforeEach( async () => {
       token = await Token.deployed() 
-      fund = await PensionFundRelease.new.apply(this, deployParams(FIRST_PAYMENT_TIME, FIRST_PAYMENT_PERCENT, token.address, PAYOUT_PERCENT))         
+      fund = await PensionFundRelease.new.apply(this, deployParams(firstPaymentTime, FIRST_PAYMENT_PERCENT, token.address, PAYOUT_PERCENT))         
     })
 
     it("#1 should return firstPaymentPercent", async () => {
