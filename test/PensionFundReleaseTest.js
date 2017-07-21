@@ -6,82 +6,163 @@ chai.should()
 var Token = artifacts.require("zeppelin-solidity/contracts/token/SimpleToken.sol")
 var PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
 
-contract('PensionFundRelease', (accounts) => {
-  var validators = [accounts[0], accounts[1]]
-  var worker = accounts[2]
-  var unauthorized = accounts[3]
 
-  var deployParams = token => [validators, worker, 100, 1500243470, 604800, 100, token]
 
-  it("should return firstPaymentPercent", async () => {
-    let instance = await PensionFundRelease.new.apply(this, deployParams('0x0'))
-    let percent = await instance.firstPaymentPercent.call()
-    let number = await percent.toNumber()
-    number.should.equal(100)
-  })
+  contract('PensionFundRelease', (accounts) => {
 
-  it("should return validators", async () => {
-    let instance = await PensionFundRelease.new.apply(this, deployParams('0x0'))
-    let validator = await instance.validators.call(0)
-    validator.should.equal(validators[0])
-  })
-  
-  it("should allow validators to vote", async () => {
-    let instance = await PensionFundRelease.new.apply(this, deployParams('0x0'))
-    await instance.vote(true, "justification", {from: validators[0]})
-    let index = await instance.voteIndex.call(validators[0])
-    let vote = await instance.votes.call(index)
-    vote[2].should.be.equal("justification")
-  })
+    const TIME_INCREMENT = 604800
+    const FIRST_PAYMENT_PERCENT = 20
+    const FIRST_PAYMENT_TIME = web3.eth.getBlock(web3.eth.blockNumber).timestamp
+    const VALIDATORS = [accounts[0], accounts[1]]
+    const WORKER = accounts[2]
+    const UNAUTHORIZED = accounts[3]
+    const INITIAL_BALANCE = 100
+    const PAYOUT_PERCENT = 40
 
-  it("should not allow non-validators to vote", async () => {
-     PensionFundRelease.new.apply(this, deployParams('0x0'))
-     .then(inst => instance.vote(true, "justification", {from: unauthorized}))
-     .should.be.rejected
-  })
+    var deployParams = 
+    (firstPaymentTime, firstPaymentPercent, token, payoutPercent) => 
+    [
+      VALIDATORS,
+      WORKER,
+      firstPaymentPercent,
+      firstPaymentTime,
+      TIME_INCREMENT,
+      payoutPercent,
+      token
+    ]
 
-  it("should allow release after all validators approval", async () => {
-    let instance = await PensionFundRelease.new.apply(this, deployParams('0x0'))
-    await instance.vote(true, "justification", {from: validators[0]})
-    await instance.vote(true, "justification", {from: validators[1]})
-    let approval =  await instance.isReleaseApproved.call()
-    approval.should.be.equal(true)
-  })
+    let token, fund
 
-  it("should not allow release if not all validators approved release", async () => {
-    let instance = await PensionFundRelease.new.apply(this, deployParams('0x0'))
-    await instance.vote(true, "justification", {from: validators[0]})
-    let vote = await instance.isReleaseApproved.call()
-    vote.should.be.equal(false)
-  })
+    beforeEach( async () => {
+      token = await Token.deployed() 
+      fund = await PensionFundRelease.new.apply(this, deployParams(FIRST_PAYMENT_TIME, FIRST_PAYMENT_PERCENT, token.address, PAYOUT_PERCENT))         
+    })
 
-  it("should allow burn after all validators rejection", async () => {
-    let instance = await PensionFundRelease.new.apply(this, deployParams('0x0'))
-    await instance.vote(false, "justification", {from: validators[0]})
-    await instance.vote(false, "justification", {from: validators[1]})
-    let approval = await instance.isBurnApproved.call()
-    approval.should.be.equal(true)
-  })
+    it("#1 should return firstPaymentPercent", async () => {
+      let percent = await fund.firstPaymentPercent.call()
+      let number = await percent.toNumber()
+      number.should.equal(FIRST_PAYMENT_PERCENT)
+    })
 
-  it("should not allow burn if not all validators rejected release", async () => {
-    let instance = await PensionFundRelease.new.apply(this, deployParams('0x0'))
-    await instance.vote(false, "justification", {from: validators[0]})
-    let approval = await instance.isBurnApproved.call()
-    approval.should.be.equal(false)
-  })
+    it("#2 should return VALIDATORS", async () => {
+      let validator = await fund.validators.call(0)
+      validator.should.equal(VALIDATORS[0])
+    })
+    
+    it("#3 should allow VALIDATORS to vote", async () => {
+      await fund.vote(true, "justification", {from: VALIDATORS[0]})
+      let index = await fund.voteIndex.call(VALIDATORS[0])
+      let vote = await fund.votes.call(index)
+      vote[2].should.be.equal("justification")
+    })
 
-  it("should release roots if all conditions met", async () => {
-    let fund, token, workerBalance, balanceNumber
-    let balance = 100
-    token = await Token.deployed()
-    fund = await PensionFundRelease.new.apply(this, deployParams(token.address))
-    await token.transfer(fund.address, balance)
-    await fund.vote(true, "justification", {from: validators[0]})
-    await fund.vote(true, "justification", {from: validators[1]})
-    await fund.releaseRoots({from: worker})
-    await fund.firtPaymentReleased.call().should.be.eventually.equal(true)
-    workerBalance = await token.balanceOf(worker)
-    balanceNumber = await workerBalance.toNumber()
-    balanceNumber.should.be.equal(balance)
-  })
-})
+    it("#4 should not allow non-VALIDATORS to vote", async () => {
+      fund.vote(true, "justification", {from: UNAUTHORIZED}).should.be.rejected
+    })
+
+    it("#5 should allow release after all VALIDATORS approval", async () => {
+      await fund.vote(true, "justification", {from: VALIDATORS[0]})
+      await fund.vote(true, "justification", {from: VALIDATORS[1]})
+      let approval =  await fund.isReleaseApproved.call()
+      approval.should.be.equal(true)
+    })
+
+    it("#6 should not allow release if not all VALIDATORS approved release", async () => {
+      await fund.vote(true, "justification", {from: VALIDATORS[0]})
+      let vote = await fund.isReleaseApproved.call()
+      vote.should.be.equal(false)
+    })
+
+    it("#7 should allow burn after all VALIDATORS rejection", async () => {
+      await fund.vote(false, "justification", {from: VALIDATORS[0]})
+      await fund.vote(false, "justification", {from: VALIDATORS[1]})
+      let approval = await fund.isBurnApproved.call()
+      approval.should.be.equal(true)
+    })
+
+    it("#8 should not allow burn if not all VALIDATORS rejected release", async () => {
+      await fund.vote(false, "justification", {from: VALIDATORS[0]})
+      let approval = await fund.isBurnApproved.call()
+      approval.should.be.equal(false)
+    })
+
+    it("#9 should release roots if all conditions met", async () => {
+      let workerBalance, balanceNumber
+      let balance = INITIAL_BALANCE      
+      await token.transfer(fund.address, balance)
+      await fund.vote(true, "justification", {from: VALIDATORS[0]})
+      await fund.vote(true, "justification", {from: VALIDATORS[1]})
+      let release = await fund.releaseRoots({from: WORKER})
+      release.logs[0].args.amount.toNumber().should.be.equal(balance* 20 / 100)
+      workerBalance = await token.balanceOf(WORKER)
+      workerBalance.toNumber().should.be.equal(balance * 20 / 100)
+    })
+
+    it("#10 should attempt to release roots and fail", async () => {
+      let balance = INITIAL_BALANCE
+      fund = await PensionFundRelease.new.apply(
+        this,
+        deployParams(
+          FIRST_PAYMENT_TIME + TIME_INCREMENT,
+          token.address,
+          PAYOUT_PERCENT
+        )
+      )         
+      await token.transfer(fund.address, balance)
+      await fund.vote(true, "justification", {from: VALIDATORS[0]})
+      await fund.vote(true, "justification", {from: VALIDATORS[1]})
+      let release = await fund.releaseRoots({from: WORKER})
+      release.logs[0].args.amount.toNumber().should.be.equal(0)                 
+    })
+
+    it("#11 should release all roots over time", async () => {
+      let workerBalance, balanceNumber
+      let balance = INITIAL_BALANCE      
+      // Transfer previous balance away
+      await token.transfer(UNAUTHORIZED, 20, {from: WORKER})
+      await token.transfer(fund.address, balance)
+      await fund.vote(true, "justification", {from: VALIDATORS[0]})
+      await fund.vote(true, "justification", {from: VALIDATORS[1]}) 
+      let release = await fund.releaseRoots({from: WORKER})
+      while(await fund.balance() > 0){
+        web3.currentProvider.send({
+          jsonrpc: '2.0',
+          method: 'evm_increaseTime',
+          params: [TIME_INCREMENT], 
+          id: new Date().getTime() 
+        })
+        release = await fund.releaseRoots({from: WORKER})
+        release.logs[0].args.amount.toNumber().should.be.equal(40)             
+      }
+      workerBalance = await token.balanceOf(WORKER)
+      workerBalance.toNumber().should.be.equal(INITIAL_BALANCE)
+      release = await fund.releaseRoots({from: WORKER})
+      release.logs[0].args.amount.toNumber().should.be.equal(0)      
+    })
+
+    it("#12 should release all roots and then release", async () => {
+      let workerBalance, balanceNumber
+      let firstPaymentPercent = 100;
+      let balance = INITIAL_BALANCE 
+      fund = await PensionFundRelease.new.apply(
+        this,
+        deployParams(
+          FIRST_PAYMENT_TIME,
+          firstPaymentPercent,
+          token.address,
+          PAYOUT_PERCENT
+        )
+      )     
+      // Transfer previous balance away
+      await token.transfer(UNAUTHORIZED, 100, {from: WORKER})
+      await token.transfer(fund.address, balance)
+      await fund.vote(true, "justification", {from: VALIDATORS[0]})
+      await fund.vote(true, "justification", {from: VALIDATORS[1]}) 
+      let release = await fund.releaseRoots({from: WORKER})
+      workerBalance = await token.balanceOf(WORKER)
+      workerBalance.toNumber().should.be.equal(INITIAL_BALANCE)
+      release = await fund.releaseRoots({from: WORKER})
+      release.logs[0].args.amount.toNumber().should.be.equal(0)      
+    })
+
+});

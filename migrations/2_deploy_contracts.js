@@ -11,5 +11,6 @@ module.exports = (deployer, network, accounts) =>
       1500243470,
       604800,
       100,
-      Token.address)
+      Token.address
+      )
     )

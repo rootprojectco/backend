@@ -7,10 +7,15 @@ contract PensionFundRelease {
     address[] public validators;
     address public worker;
     uint8 public firstPaymentPercent;
-    uint public firstPaymentTime;
+    uint8 public reccurentPaymentPercent;    
+    uint public paymentTime;
+    uint public lastPaymentTime;
     uint public reccurentPaymentInterval;
-    uint8 public reccurentPaymentPercent;
+    uint public totalPayment;
+    uint public totalReleased;
+    bool public firtPaymentReleased = false;
     ERC20Basic public roots;
+    uint public initialFunds;
 
     struct Vote {
         bool approve;
@@ -20,7 +25,6 @@ contract PensionFundRelease {
 
     mapping (address => uint) public voteIndex;
     Vote[] public votes;
-    bool public firtPaymentReleased = false;
 
     event Voted(bool approve, address validator, string justification);
     event Released(uint amount, address worker);
@@ -39,13 +43,14 @@ contract PensionFundRelease {
         require(_firstPaymentPercent <= 100);
         require(_reccurentPaymentPercent <= 100);
 
+        totalReleased = 0;
         validators = _validators;
         worker = _worker;
         firstPaymentPercent = _firstPaymentPercent;
-        firstPaymentTime = _firstPaymentTime;
+        paymentTime = _firstPaymentTime;
         reccurentPaymentInterval = _reccurentPaymentInterval;
-        reccurentPaymentPercent = _reccurentPaymentPercent;
         roots = ERC20Basic(_rootsAddress);
+        reccurentPaymentPercent = _reccurentPaymentPercent;
 
         votes.push(Vote(false, 0x0, "")); //first dummy vote
     }
@@ -96,10 +101,17 @@ contract PensionFundRelease {
         return num == validators.length;
     }
 
+
     // calculate the amount of payment
     function getPaymentAmount() constant returns (uint amount){
-        if(!firtPaymentReleased) return balance() * 100 / firstPaymentPercent;
-        return 0;
+        if(!firtPaymentReleased) {
+            firtPaymentReleased = true;
+            initialFunds = balance();          
+            return initialFunds * firstPaymentPercent / 100;
+        }
+        else{
+            return initialFunds * reccurentPaymentPercent / 100;
+        }
     }
 
     // get current fund balance in ROOTs
@@ -109,14 +121,20 @@ contract PensionFundRelease {
 
     // release the fund
     function releaseRoots() returns (uint releasedAmount){
-        require(isReleaseApproved());
-        require(now > firstPaymentTime);
-
-        releasedAmount = getPaymentAmount();
-        if(releasedAmount > 0){
-            firtPaymentReleased = true;
-            roots.transfer(worker, releasedAmount);
-            Released(releasedAmount, worker);
+        // Confirm validators have released funds
+        if( !isReleaseApproved() || now < paymentTime){
+            releasedAmount = 0;
         }
+        // Confirm the next payment is due to be released
+        else {
+            releasedAmount = getPaymentAmount();
+            if(releasedAmount > balance())
+                releasedAmount = balance();
+            // Assumes intended interval is meant to recur regardless of claiming funds            
+            paymentTime = paymentTime + reccurentPaymentInterval;
+            roots.transfer(worker, releasedAmount);
+        }
+        Released(releasedAmount, worker);
+
     }
 }
