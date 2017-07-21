@@ -12,7 +12,7 @@ var PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
 
     const TIME_INCREMENT = 604800
     const FIRST_PAYMENT_PERCENT = 20
-    const FIRST_PAYMENT_TIME = web3.eth.getBlock(web3.eth.blockNumber).timestamp
+    var firstPaymentTime = web3.eth.getBlock(web3.eth.blockNumber).timestamp
     const VALIDATORS = [accounts[0], accounts[1]]
     const WORKER = accounts[2]
     const UNAUTHORIZED = accounts[3]
@@ -20,15 +20,15 @@ var PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
     const PAYOUT_PERCENT = 40
 
     var deployParams = 
-    (firstPaymentTime, firstPaymentPercent, token, payoutPercent) => 
+    (_firstPaymentTime, _firstPaymentPercent, _token, _payoutPercent) => 
     [
       VALIDATORS,
       WORKER,
-      firstPaymentPercent,
-      firstPaymentTime,
+      _firstPaymentPercent,
+      _firstPaymentTime,
       TIME_INCREMENT,
-      payoutPercent,
-      token
+      _payoutPercent,
+      _token
     ]
 
     let token, fund
@@ -104,6 +104,7 @@ var PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
         this,
         deployParams(
           FIRST_PAYMENT_TIME + TIME_INCREMENT,
+          FIRST_PAYMENT_PERCENT,
           token.address,
           PAYOUT_PERCENT
         )
