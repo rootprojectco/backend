@@ -11,4 +11,4 @@ install:
 - truffle install
 
 script:
-- testrpc & npm test
+- testrpc &> /dev/null & npm test

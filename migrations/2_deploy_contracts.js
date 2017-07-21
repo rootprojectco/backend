@@ -1,5 +1,6 @@
-var Token = artifacts.require("zeppelin-solidity/contracts/token/SimpleToken.sol")
-var PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
+
+let Token = artifacts.require("zeppelin-solidity/contracts/token/SimpleToken.sol")
+let PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
 
 module.exports = (deployer, network, accounts) =>
   deployer.deploy(Token)
@@ -12,5 +13,5 @@ module.exports = (deployer, network, accounts) =>
       604800,
       100,
       Token.address
-      )
     )
+  )

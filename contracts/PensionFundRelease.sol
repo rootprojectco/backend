@@ -17,6 +17,7 @@ contract PensionFundRelease {
     ERC20Basic public roots;
     uint public initialFunds;
 
+
     struct Vote {
         bool approve;
         address validator;
@@ -49,8 +50,9 @@ contract PensionFundRelease {
         firstPaymentPercent = _firstPaymentPercent;
         paymentTime = _firstPaymentTime;
         reccurentPaymentInterval = _reccurentPaymentInterval;
-        roots = ERC20Basic(_rootsAddress);
         reccurentPaymentPercent = _reccurentPaymentPercent;
+
+        roots = ERC20Basic(_rootsAddress);
 
         votes.push(Vote(false, 0x0, "")); //first dummy vote
     }
