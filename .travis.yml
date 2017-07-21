@@ -1,0 +1,14 @@
+language: node_js
+dist: trusty
+sudo: false
+
+node_js:
+- "6"
+
+install:
+- npm install -g truffle ethereumjs-testrpc
+- npm install
+- truffle install
+
+script:
+- testrpc & npm test
