@@ -7,16 +7,12 @@ contract PensionFundRelease {
     address[] public validators;
     address public worker;
     uint8 public firstPaymentPercent;
-    uint8 public reccurentPaymentPercent;    
+    uint8 public recurrentPaymentPercent;    
     uint public paymentTime;
-    uint public lastPaymentTime;
-    uint public reccurentPaymentInterval;
-    uint public totalPayment;
-    uint public totalReleased;
+    uint public recurrentPaymentInterval;
     bool public firtPaymentReleased = false;
     ERC20Basic public roots;
     uint public initialFunds;
-
 
     struct Vote {
         bool approve;
@@ -35,24 +31,22 @@ contract PensionFundRelease {
         address _worker,
         uint8 _firstPaymentPercent,
         uint _firstPaymentTime,
-        uint _reccurentPaymentInterval,
-        uint8 _reccurentPaymentPercent,
+        uint _recurrentPaymentInterval,
+        uint8 _recurrentPaymentPercent,
         address _rootsAddress
     ){
         require(_validators.length > 0);
         require(_worker != 0x0);
         require(_firstPaymentPercent <= 100);
-        require(_reccurentPaymentPercent <= 100);
+        require(_recurrentPaymentPercent <= 100);
 
-        totalReleased = 0;
         validators = _validators;
         worker = _worker;
         firstPaymentPercent = _firstPaymentPercent;
         paymentTime = _firstPaymentTime;
-        reccurentPaymentInterval = _reccurentPaymentInterval;
-        reccurentPaymentPercent = _reccurentPaymentPercent;
-
+        recurrentPaymentInterval = _recurrentPaymentInterval;
         roots = ERC20Basic(_rootsAddress);
+        recurrentPaymentPercent = _recurrentPaymentPercent;
 
         votes.push(Vote(false, 0x0, "")); //first dummy vote
     }
@@ -93,6 +87,11 @@ contract PensionFundRelease {
         return num == validators.length;
     }
 
+    // Check whether the time period on fund dispersal has been reached
+    function isTimePeriodEnded() constant returns (bool ended){
+        return (block.timestamp > paymentTime);
+    }
+
     // check wether validators have decided to burn the fund
     function isBurnApproved() constant returns (bool approved){
         uint num = 0;
@@ -106,13 +105,11 @@ contract PensionFundRelease {
 
     // calculate the amount of payment
     function getPaymentAmount() constant returns (uint amount){
-        if(!firtPaymentReleased) {
-            firtPaymentReleased = true;
-            initialFunds = balance();          
+        if(!firtPaymentReleased) {      
             return initialFunds * firstPaymentPercent / 100;
         }
         else{
-            return initialFunds * reccurentPaymentPercent / 100;
+            return initialFunds * recurrentPaymentPercent / 100;
         }
     }
 
@@ -124,19 +121,22 @@ contract PensionFundRelease {
     // release the fund
     function releaseRoots() returns (uint releasedAmount){
         // Confirm validators have released funds
-        if( !isReleaseApproved() || now < paymentTime){
-            releasedAmount = 0;
-        }
+        require(isReleaseApproved());
+        require(isTimePeriodEnded());
         // Confirm the next payment is due to be released
-        else {
+        if(!firtPaymentReleased) {      
+            initialFunds = balance();
             releasedAmount = getPaymentAmount();
-            if(releasedAmount > balance())
-                releasedAmount = balance();
-            // Assumes intended interval is meant to recur regardless of claiming funds            
-            paymentTime = paymentTime + reccurentPaymentInterval;
-            roots.transfer(worker, releasedAmount);
+            firtPaymentReleased = true;
         }
+        else{
+            releasedAmount = getPaymentAmount();            
+        }
+        if(releasedAmount > balance())
+            releasedAmount = balance();
+        // Assumes intended interval is meant to recur regardless of claiming funds            
+        paymentTime = paymentTime + recurrentPaymentInterval;
+        roots.transfer(worker, releasedAmount);
         Released(releasedAmount, worker);
-
     }
 }
