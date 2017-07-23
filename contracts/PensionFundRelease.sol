@@ -89,7 +89,7 @@ contract PensionFundRelease {
     }
 
     // Check whether the time period on fund dispersal has been reached
-    function isTimePeriodEnded() constant returns (bool ended){
+    function isTimePeriodEnded() constant returns (bool ended) {
         return (block.timestamp > paymentTime);
     }
 
@@ -104,13 +104,11 @@ contract PensionFundRelease {
         return num == validators.length;
     }
 
-
     // calculate the amount of payment
-    function getPaymentAmount() constant returns (uint amount){
-        if(!firtPaymentReleased) {      
+    function getPaymentAmount() constant returns (uint amount) {
+        if (!firtPaymentReleased) {
             return initialFunds * firstPaymentPercent / 100;
-        }
-        else{
+        } else {
             return initialFunds * recurrentPaymentPercent / 100;
         }
     }
@@ -121,20 +119,19 @@ contract PensionFundRelease {
     }
 
     // release the fund
-    function releaseRoots() returns (uint releasedAmount){
+    function releaseRoots() returns (uint releasedAmount) {
         // Confirm validators have released funds
         require(isReleaseApproved());
         // Confirm the next payment is due to be released
         require(isTimePeriodEnded());
-        if(!firtPaymentReleased) {      
+        if (!firtPaymentReleased) {      
             initialFunds = balance();
             releasedAmount = getPaymentAmount();
             firtPaymentReleased = true;
-        }
-        else{
+        } else {
             releasedAmount = getPaymentAmount();            
         }
-        if(releasedAmount > balance())
+        if (releasedAmount > balance())
             releasedAmount = balance();
         // Assumes intended interval is meant to recur regardless of claiming funds            
         paymentTime = paymentTime + recurrentPaymentInterval;
