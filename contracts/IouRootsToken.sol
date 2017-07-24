@@ -86,7 +86,12 @@ contract IouRootsToken is MintableToken {
         uint256 tokens = weiAmount.mul(rate);
 
         mintInternal(beneficiary, tokens);
-        TokenPurchase(msg.sender, beneficiary, weiAmount, tokens);
+        TokenPurchase(
+            msg.sender, 
+            beneficiary, 
+            weiAmount, 
+            tokens
+        );
 
         forwardFunds();
     }
