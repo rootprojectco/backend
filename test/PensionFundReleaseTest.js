@@ -1,11 +1,10 @@
- chai = require("chai")
+let chai = require("chai")
 let chaiAsPromised = require("chai-as-promised")
 chai.use(chaiAsPromised)
 chai.should()
 
 let Token = artifacts.require("zeppelin-solidity/contracts/token/SimpleToken.sol")
 let PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
-
 
 
   contract('PensionFundRelease', (accounts) => {
@@ -17,6 +16,7 @@ let PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
     const WORKER = accounts[2]
     const UNAUTHORIZED = accounts[3]
     const INITIAL_BALANCE = 100
+    const PERCENT_DENOMINATOR = 100
     const PAYOUT_PERCENT = 40
 
     let deployParams = 
@@ -35,7 +35,15 @@ let PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
 
     beforeEach( async () => {
       token = await Token.deployed() 
-      fund = await PensionFundRelease.new.apply(this, deployParams(firstPaymentTime, FIRST_PAYMENT_PERCENT, token.address, PAYOUT_PERCENT))         
+      fund = await PensionFundRelease.new.apply(
+        this,
+        deployParams(
+          firstPaymentTime,
+          FIRST_PAYMENT_PERCENT,
+          token.address,
+          PAYOUT_PERCENT
+        )
+      )         
     })
 
     it("#1 should return firstPaymentPercent", async () => {
@@ -93,12 +101,13 @@ let PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
       await fund.vote(true, "justification", {from: VALIDATORS[0]})
       await fund.vote(true, "justification", {from: VALIDATORS[1]})
       let release = await fund.releaseRoots({from: WORKER})
-      release.logs[0].args.amount.toNumber().should.be.equal(balance* 20 / 100)
+      release.logs[0].args.amount.toNumber()
+      .should.be.equal(balance* FIRST_PAYMENT_PERCENT / PERCENT_DENOMINATOR)
       workerBalance = await token.balanceOf(WORKER)
-      workerBalance.toNumber().should.be.equal(balance * 20 / 100)
+      workerBalance.toNumber().should.be.equal(balance * FIRST_PAYMENT_PERCENT / PERCENT_DENOMINATOR)
     })
 
-    it("#10 should attempt to release roots and fail", async () => {
+    it("#10 should attempt to release roots before freeze period ends and fail", async () => {
       let balance = INITIAL_BALANCE
       fund = await PensionFundRelease.new.apply(
         this,
@@ -113,17 +122,18 @@ let PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
       await fund.vote(true, "justification", {from: VALIDATORS[0]})
       await fund.vote(true, "justification", {from: VALIDATORS[1]})
       try {
-        await fund.releaseRoots({from: WORKER})
+        let release = await fund.releaseRoots({from: WORKER})
       } catch (err) {
-        err.should.be.a("Error")
-      }
+        error = err
+      } 
+      error.should.be.a("Error")
     })
 
     it("#11 should release all roots over time", async () => {
       let workerBalance, balanceNumber
-      let balance = INITIAL_BALANCE      
+      let balance = INITIAL_BALANCE
       // Transfer previous balance away
-      await token.transfer(UNAUTHORIZED, 20, {from: WORKER})
+      await token.transfer(UNAUTHORIZED, FIRST_PAYMENT_PERCENT, {from: WORKER})
       await token.transfer(fund.address, balance)
       await fund.vote(true, "justification", {from: VALIDATORS[0]})
       await fund.vote(true, "justification", {from: VALIDATORS[1]}) 
@@ -136,20 +146,16 @@ let PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
           id: new Date().getTime() 
         })
         release = await fund.releaseRoots({from: WORKER})
-        release.logs[0].args.amount.toNumber().should.be.equal(40)             
+        release.logs[0].args.amount.toNumber().should.be.equal(PAYOUT_PERCENT)             
       }
       workerBalance = await token.balanceOf(WORKER)
-      workerBalance.toNumber().should.be.equal(INITIAL_BALANCE)
-      try {
-        await fund.releaseRoots({from: WORKER})
-      } catch (err) {
-        err.should.be.a("Error")
-      }    
+      workerBalance.toNumber().should.be.equal(INITIAL_BALANCE)   
     })
 
-    it("#12 should release all roots and then release", async () => {
+    it("#12 should release all roots and then release balance of 0", async () => {
       let workerBalance, balanceNumber
-      let firstPaymentPercent = 100;
+      let firstPaymentPercent = PERCENT_DENOMINATOR
+      let error;
       let balance = INITIAL_BALANCE 
       fund = await PensionFundRelease.new.apply(
         this,
@@ -161,18 +167,15 @@ let PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
         )
       )     
       // Transfer previous balance away
-      await token.transfer(UNAUTHORIZED, 100, {from: WORKER})
+      await token.transfer(UNAUTHORIZED, INITIAL_BALANCE, {from: WORKER})
       await token.transfer(fund.address, balance)
       await fund.vote(true, "justification", {from: VALIDATORS[0]})
       await fund.vote(true, "justification", {from: VALIDATORS[1]}) 
       let release = await fund.releaseRoots({from: WORKER})
       workerBalance = await token.balanceOf(WORKER)
       workerBalance.toNumber().should.be.equal(INITIAL_BALANCE)
-      try {
-        await fund.releaseRoots({from: WORKER})
-      } catch (err) {
-        err.should.be.a("Error")
-      }    
+      release = await fund.releaseRoots({from: WORKER})
+      release.logs[0].args.amount.toNumber().should.be.equal(0)
     })
 
 });

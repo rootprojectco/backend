@@ -89,7 +89,7 @@ contract PensionFundRelease {
     }
 
     // Check whether the time period on fund dispersal has been reached
-    function isTimePeriodEnded() constant returns (bool ended) {
+    function isFundFreezePeriodEnded() constant returns (bool ended) {
         return (block.timestamp > paymentTime);
     }
 
@@ -123,7 +123,7 @@ contract PensionFundRelease {
         // Confirm validators have released funds
         require(isReleaseApproved());
         // Confirm the next payment is due to be released
-        require(isTimePeriodEnded());
+        require(isFundFreezePeriodEnded());
         if (!firtPaymentReleased) {      
             initialFunds = balance();
             releasedAmount = getPaymentAmount();
