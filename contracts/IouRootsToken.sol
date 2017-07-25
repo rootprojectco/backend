@@ -61,7 +61,13 @@ contract IouRootsToken is MintableToken {
 
     event TokenPurchase(address indexed purchaser, address indexed beneficiary, uint256 value, uint256 amount);
 
-
+    // This is not a ROOT token.
+    // This token is used for the preallocation of the ROOT token, that will be issued later.
+    // Only Owner can transfer balances and mint ROOTS without payment.
+    // Everybody can buy IOU ROOT token by sending some amount of ETH to the contract.
+    // Amount of purchased ROOTS determined by the Rate.
+    // All ETH are going to Wallet address.
+    // Owner can finalize the contract by `finishMinting` transaction
     function IouRootsToken(
         uint256 _rate,
         address _wallet,
