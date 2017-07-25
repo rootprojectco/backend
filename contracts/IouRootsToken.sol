@@ -47,6 +47,12 @@ contract MintableToken is StandardToken, Ownable {
 
 contract IouRootsToken is MintableToken {
 
+    string public name;
+    
+    string public symbol;
+    
+    uint8 public decimals;
+
     // address where funds are collected
     address public wallet;
 
@@ -56,12 +62,21 @@ contract IouRootsToken is MintableToken {
     event TokenPurchase(address indexed purchaser, address indexed beneficiary, uint256 value, uint256 amount);
 
 
-    function IouRootsToken(uint256 _rate, address _wallet) {
+    function IouRootsToken(
+        uint256 _rate,
+        address _wallet,
+        string _name,
+        string _symbol,
+        uint8 _decimals
+    ) {
         require(_rate > 0);
         require(_wallet != 0x0);
 
         rate = _rate;
         wallet = _wallet;
+        name = _name;
+        symbol = _symbol;
+        decimals = _decimals;
     }
 
     function transfer(address _to, uint _value) onlyOwner returns (bool) {
