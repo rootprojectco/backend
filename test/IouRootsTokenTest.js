@@ -36,15 +36,6 @@ contract('IouRootsToken', (accounts) => {
 
     it("should return firstPaymentPercent(non-fallback)", async () => {
         let instance = await IouRootsToken.new.apply(this, deployParams)
-        
-        instance.TokenPurchase({}, function(err,res){
-            if(!err){
-            console.log(res.args);// this is the line which you want to show to the console, when your message gets called, which is in green line in the console.
-            }
-            else{
-            console.log(err);
-            }
-        })
         let sendValue = await instance.buyTokens(beneficiary, {from: sender, value: VALUE_TO_SEND})
         value = await instance.balanceOf(beneficiary)
         console.log("Beneficiary:" + value)
