@@ -15,15 +15,17 @@ var PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
     var firstPaymentTime = web3.eth.getBlock(web3.eth.blockNumber).timestamp
     const VALIDATORS = [accounts[0], accounts[1]]
     const WORKER = accounts[2]
+    const MASTER = accounts[4]
     const UNAUTHORIZED = accounts[3]
     const INITIAL_BALANCE = 100
     const PAYOUT_PERCENT = 40
 
-    var deployParams = 
-    (_firstPaymentTime, _firstPaymentPercent, _token, _payoutPercent) => 
+    var deployParams =
+    (_firstPaymentTime, _firstPaymentPercent, _token, _payoutPercent) =>
     [
       VALIDATORS,
       WORKER,
+      MASTER,
       _firstPaymentPercent,
       _firstPaymentTime,
       TIME_INCREMENT,
@@ -34,8 +36,8 @@ var PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
     let token, fund
 
     beforeEach( async () => {
-      token = await Token.deployed() 
-      fund = await PensionFundRelease.new.apply(this, deployParams(firstPaymentTime, FIRST_PAYMENT_PERCENT, token.address, PAYOUT_PERCENT))         
+      token = await Token.deployed()
+      fund = await PensionFundRelease.new.apply(this, deployParams(firstPaymentTime, FIRST_PAYMENT_PERCENT, token.address, PAYOUT_PERCENT))
     })
 
     it("#1 should return firstPaymentPercent", async () => {
@@ -88,7 +90,7 @@ var PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
 
     it("#9 should release roots if all conditions met", async () => {
       let workerBalance, balanceNumber
-      let balance = INITIAL_BALANCE      
+      let balance = INITIAL_BALANCE
       await token.transfer(fund.address, balance)
       await fund.vote(true, "justification", {from: VALIDATORS[0]})
       await fund.vote(true, "justification", {from: VALIDATORS[1]})
@@ -108,7 +110,7 @@ var PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
           token.address,
           PAYOUT_PERCENT
         )
-      )         
+      )
       await token.transfer(fund.address, balance)
       await fund.vote(true, "justification", {from: VALIDATORS[0]})
       await fund.vote(true, "justification", {from: VALIDATORS[1]})
@@ -153,7 +155,7 @@ var PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
           token.address,
           PAYOUT_PERCENT
         )
-      )     
+      )
       // Transfer previous balance away
       await token.transfer(UNAUTHORIZED, 100, {from: WORKER})
       await token.transfer(fund.address, balance)

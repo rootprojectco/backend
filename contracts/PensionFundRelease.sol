@@ -6,6 +6,7 @@ import "zeppelin-solidity/contracts/token/ERC20Basic.sol";
 contract PensionFundRelease {
     address[] public validators;
     address public worker;
+    address public master;
     uint8 public firstPaymentPercent;
     uint8 public reccurentPaymentPercent;    
     uint public paymentTime;
@@ -29,10 +30,12 @@ contract PensionFundRelease {
 
     event Voted(bool approve, address validator, string justification);
     event Released(uint amount, address worker);
+    event Refunded(uint amount, address master);
 
     function PensionFundRelease(
         address[] _validators,
         address _worker,
+        address _master,
         uint8 _firstPaymentPercent,
         uint _firstPaymentTime,
         uint _reccurentPaymentInterval,
@@ -41,12 +44,14 @@ contract PensionFundRelease {
     ){
         require(_validators.length > 0);
         require(_worker != 0x0);
+        require(_master != 0x0);
         require(_firstPaymentPercent <= 100);
         require(_reccurentPaymentPercent <= 100);
 
         totalReleased = 0;
         validators = _validators;
         worker = _worker;
+        master = _master;
         firstPaymentPercent = _firstPaymentPercent;
         paymentTime = _firstPaymentTime;
         reccurentPaymentInterval = _reccurentPaymentInterval;
@@ -139,4 +144,15 @@ contract PensionFundRelease {
         Released(releasedAmount, worker);
 
     }
+
+    function refundRoots() returns (uint refundAmount){
+        refundAmount = 0;
+        if( isBurnApproved() && now >= paymentTime){
+            refundAmount = balance();
+            paymentTime = paymentTime + reccurentPaymentInterval;
+            roots.transfer(master, refundAmount);
+        }
+        Refunded(refundAmount, worker);
+    }
+
 }
