@@ -20,10 +20,11 @@
   },
   "homepage": "https://github.com/rootprojectco/backend#readme",
   "dependencies": {
-    "zeppelin-solidity" : "^1.2.0"
+    "zeppelin-solidity": "^1.2.0"
   },
   "devDependencies": {
-    "chai" : "^4.1.0",
-    "chai-as-promised" : "^7.1.1"
+    "chai": "^4.1.0",
+    "chai-as-promised": "^7.1.1",
+    "eslint": "^4.0.0-rc.0"
   }
 }
