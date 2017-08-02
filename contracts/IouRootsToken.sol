@@ -1,125 +1,99 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.1;
 
-import 'zeppelin-solidity/contracts/token/StandardToken.sol';
+import 'zeppelin-solidity/contracts/token/BasicToken.sol';
 import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 
 
-contract MintableToken is StandardToken, Ownable {
-    event Mint(address indexed to, uint256 amount);
-    event MintFinished();
-
-    bool public mintingFinished = false;
-
-
-    modifier canMint() {
-        require(!mintingFinished);
-        _;
-    }
-
-    /**
-    * @dev Function to mint tokens
-    * @param _to The address that will recieve the minted tokens.
-    * @param _amount The amount of tokens to mint.
-    * @return A boolean that indicates if the operation was successful.
-    */
-    function mint(address _to, uint256 _amount) onlyOwner returns (bool) {
-        return mintInternal(_to, _amount);
-    }
-
-    /**
-    * @dev Function to stop minting new tokens.
-    * @return True if the operation was successful.
-    */
-    function finishMinting() onlyOwner returns (bool) {
-        mintingFinished = true;
-        MintFinished();
-        return true;
-    }
-
-    function mintInternal(address _to, uint256 _amount) internal canMint returns (bool) {
-        totalSupply = totalSupply.add(_amount);
-        balances[_to] = balances[_to].add(_amount);
-        Mint(_to, _amount);
-        return true;
-    }
-}
-
-
-contract IouRootsToken is MintableToken {
+contract PreICOLastWillToken is BasicToken, Ownable {
 
     string public name;
-    
-    string public symbol;
-    
-    uint8 public decimals;
 
-    // address where funds are collected
-    address public wallet;
+    string public symbol;
 
     // how many token units a buyer gets per wei
     uint256 public rate;
 
-    event TokenPurchase(address indexed purchaser, address indexed beneficiary, uint256 value, uint256 amount);
+    // a minimal amount to ether we need to gather
+    uint256 public softcap;
 
-    // This is not a ROOT token.
-    // This token is used for the preallocation of the ROOT token, that will be issued later.
-    // Only Owner can transfer balances and mint ROOTS without payment.
-    // Everybody can buy IOU ROOT token by sending some amount of ETH to the contract.
-    // Amount of purchased ROOTS determined by the Rate.
-    // All ETH are going to Wallet address.
-    // Owner can finalize the contract by `finishMinting` transaction
-    function IouRootsToken(
-        uint256 _rate,
-        address _wallet,
-        string _name,
-        string _symbol,
-        uint8 _decimals
+    // max we cat gather
+    uint256 public hardcap;
+
+    // total tokens sold
+    uint256 public totalSupply;
+
+    // timestamp
+    uint256 public deadline;
+
+    bool public active = true;
+
+    address public contractOwner;
+
+    // mapping does not support iteration,
+    // so we need duplicate balance as array for return funds to investors if pre ico fails
+    struct Funder {
+        address addr;
+        uint amount;
+    }
+
+    Funder[] balancesForReturn;
+
+    function PreICOLastWillToken(
+            uint256 _rate,
+            string _name,
+            string _symbol,
+            uint256 _softcap,
+            uint256 _hardcap,
+            address _contractOwner
     ) {
         require(_rate > 0);
-        require(_wallet != 0x0);
-
         rate = _rate;
-        wallet = _wallet;
         name = _name;
         symbol = _symbol;
-        decimals = _decimals;
+        softcap = _softcap;
+        hardcap = _hardcap;
+        contractOwner = _contractOwner;
     }
 
-    function transfer(address _to, uint _value) onlyOwner returns (bool) {
-        return super.transfer(_to, _value);
+    // disable transfer
+    function transfer(address _to, uint _value) returns (bool) {
+        require(1==0);
     }
 
-    function transferFrom(address _from, address _to, uint _value) onlyOwner returns (bool) {
-        return super.transferFrom(_from, _to, _value);
+    modifier canBuy() {
+        require(active);
+        _;
     }
 
-    function () payable {
-        buyTokens(msg.sender);
+    function finishIfNeed() {
+        if (now > deadline || totalSupply > hardcap) {
+            active = false;
+            if (totalSupply < softcap) {
+                for (uint i = 0; i < balancesForReturn.length; ++i) {
+                    balancesForReturn[i].addr.transfer(balancesForReturn[i].amount);
+                }
+            }
+            suicide(contractOwner);
+        }
     }
 
-    function buyTokens(address beneficiary) payable {
+   function () payable {
+       buyTokens(msg.sender);
+   }
+
+    function buyTokens(address beneficiary) canBuy payable {
+        
+        finishIfNeed();
+
         require(beneficiary != 0x0);
         require(msg.value > 0);
+        
 
         uint256 weiAmount = msg.value;
-
-        // calculate token amount to be created
         uint256 tokens = weiAmount.mul(rate);
 
-        mintInternal(beneficiary, tokens);
-        TokenPurchase(
-            msg.sender, 
-            beneficiary, 
-            weiAmount, 
-            tokens
-        );
-
-        forwardFunds();
+        totalSupply = totalSupply.add(tokens);
+        balances[beneficiary] = balances[beneficiary].add(tokens);
+        balancesForReturn.push(Funder({addr: beneficiary, amount: tokens}));
     }
-
-    // send ether to the fund collection wallet
-    function forwardFunds() internal {
-        wallet.transfer(msg.value);
-    }
-
 }
