@@ -7,6 +7,7 @@ import "zeppelin-solidity/contracts/token/ERC20Basic.sol";
 contract PensionFundRelease {
     address[] public validators;
     address public worker;
+    address public master;
     uint8 public firstPaymentPercent;
     uint8 public recurrentPaymentPercent;    
     uint public paymentTime;
@@ -26,10 +27,12 @@ contract PensionFundRelease {
 
     event Voted(bool approve, address validator, string justification);
     event Released(uint amount, address worker);
+    event Refunded(uint amount, address master);
 
     function PensionFundRelease(
         address[] _validators,
         address _worker,
+        address _master,
         uint8 _firstPaymentPercent,
         uint _firstPaymentTime,
         uint _recurrentPaymentInterval,
@@ -38,11 +41,13 @@ contract PensionFundRelease {
     ) {
         require(_validators.length > 0);
         require(_worker != 0x0);
+        require(_master != 0x0);
         require(_firstPaymentPercent <= 100);
         require(_recurrentPaymentPercent <= 100);
 
         validators = _validators;
         worker = _worker;
+        master = _master;
         firstPaymentPercent = _firstPaymentPercent;
         paymentTime = _firstPaymentTime;
         recurrentPaymentInterval = _recurrentPaymentInterval;
@@ -137,5 +142,26 @@ contract PensionFundRelease {
         paymentTime = paymentTime + recurrentPaymentInterval;
         roots.transfer(worker, releasedAmount);
         Released(releasedAmount, worker);
+    }
+
+    function refundRoots() returns (uint refundedAmount) {
+        // Confirm validators have refunded funds
+        require(isBurnApproved());
+        // Confirm the next payment is due to be released
+        require(isFundFreezePeriodEnded());
+        if (!firtPaymentReleased) {
+            initialFunds = balance();
+            refundedAmount = getPaymentAmount();
+            firtPaymentReleased = true;
+        } else {
+            refundedAmount = getPaymentAmount();
+        }
+        if (refundedAmount > balance()){
+            refundedAmount = balance();
+        }
+        // Assumes intended interval is meant to recur regardless of claiming funds
+        paymentTime = paymentTime + recurrentPaymentInterval;
+        roots.transfer(master, refundedAmount);
+        Refunded(refundedAmount, master);
     }
 }

@@ -27,7 +27,7 @@ contract('IouRootsToken', (accounts) => {
 
     it("should return firstPaymentPercent(fallback)", async () => {
         let instance = await IouRootsToken.new.apply(this, deployParams)
-        let sendValue = await instance.sendTransaction({from: sender, value: VALUE_TO_SEND})
+        await instance.sendTransaction({from: sender, value: VALUE_TO_SEND})
         let value = await instance.balanceOf(sender)
         console.log("Sender:" + sender)
         console.log("Balance: " + value)
@@ -36,7 +36,7 @@ contract('IouRootsToken', (accounts) => {
 
     it("should return firstPaymentPercent(non-fallback)", async () => {
         let instance = await IouRootsToken.new.apply(this, deployParams)
-        let sendValue = await instance.buyTokens(beneficiary, {from: sender, value: VALUE_TO_SEND})
+        await instance.buyTokens(beneficiary, {from: sender, value: VALUE_TO_SEND})
         value = await instance.balanceOf(beneficiary)
         console.log("Beneficiary:" + value)
         value.toNumber().should.be.equal(VALUE_TO_SEND * RATE)
