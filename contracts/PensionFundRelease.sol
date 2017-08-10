@@ -9,7 +9,7 @@ contract PensionFundRelease {
     address public worker;
     address public master;
     uint8 public firstPaymentPercent;
-    uint8 public recurrentPaymentPercent;    
+    uint8 public recurrentPaymentPercent;
     uint public paymentTime;
     uint public recurrentPaymentInterval;
     bool public firtPaymentReleased = false;
@@ -129,16 +129,16 @@ contract PensionFundRelease {
         require(isReleaseApproved());
         // Confirm the next payment is due to be released
         require(isFundFreezePeriodEnded());
-        if (!firtPaymentReleased) {      
+        if (!firtPaymentReleased) {
             initialFunds = balance();
             releasedAmount = getPaymentAmount();
             firtPaymentReleased = true;
         } else {
-            releasedAmount = getPaymentAmount();            
+            releasedAmount = getPaymentAmount();
         }
         if (releasedAmount > balance())
             releasedAmount = balance();
-        // Assumes intended interval is meant to recur regardless of claiming funds            
+        // Assumes intended interval is meant to recur regardless of claiming funds
         paymentTime = paymentTime + recurrentPaymentInterval;
         roots.transfer(worker, releasedAmount);
         Released(releasedAmount, worker);

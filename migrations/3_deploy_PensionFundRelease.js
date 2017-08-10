@@ -1,3 +1,4 @@
+
 let Token = artifacts.require("zeppelin-solidity/contracts/token/SimpleToken.sol")
 let PensionFundRelease = artifacts.require("./PensionFundRelease.sol")
 
