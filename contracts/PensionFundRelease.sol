@@ -156,7 +156,7 @@ contract PensionFundRelease {
         } else {
             refundedAmount = getPaymentAmount();
         }
-        if (refundedAmount > balance()){
+        if (refundedAmount > balance()) {
             refundedAmount = balance();
         }
         // Assumes intended interval is meant to recur regardless of claiming funds
