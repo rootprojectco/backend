@@ -48,15 +48,15 @@ contract PricingStrategy {
     function calculateTokenAmount(uint weiAmount) public constant returns (uint tokenAmount) {
         uint bonusRate = 0;
 
-        if (weiAmount > minimumWeiAmount) {
+        if (weiAmount >= minimumWeiAmount) {
             bonusRate = rate0;
         }
 
-        if (weiAmount > threshold1) {
+        if (weiAmount >= threshold1) {
             bonusRate = rate1;
         }
 
-        if (weiAmount > threshold2) {
+        if (weiAmount >= threshold2) {
             bonusRate = rate2;
         }
 
