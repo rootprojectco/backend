@@ -176,7 +176,7 @@ contract Presale is Pausable {
         // Check that we did not bust the cap
         require(!isBreakingCap(tokensSold));
 
-        assignTokens(receiver, tokenAmount);
+        token.mint(receiver, tokenAmount);
 
         // Pocket the money
         multisigWallet.transfer(weiAmount);
@@ -267,13 +267,6 @@ contract Presale is Pausable {
     }
 
     /**
-    * @return true if the presale has raised enough money to be a successful.
-    */
-    function isMinimumGoalReached() public constant returns (bool reached) {
-        return weiRaised >= minimumFundingGoal;
-    }
-
-    /**
     * Crowdfund state machine management.
     *
     * We make it a function and do not assign the result to a variable, so there is no chance of the variable being stale.
@@ -293,16 +286,12 @@ contract Presale is Pausable {
             return State.Failure;
     }
 
-    //
-    // Modifiers
-    //
-
-    /** Modified allowing execution only if the presale is currently running.  */
-    modifier inState(State state) {
-        require(getState() == state);
-        _;
+    /**
+    * @return true if the presale has raised enough money to be a successful.
+    */
+    function isMinimumGoalReached() public constant returns (bool reached) {
+        return weiRaised >= minimumFundingGoal;
     }
-
 
     /**
     * Called from invest() to confirm if the curret investment does not break our cap rule.
@@ -315,10 +304,13 @@ contract Presale is Pausable {
         return tokensSold >= tokensHardCap;
     }
 
-    /**
-    * Dynamically create tokens and assign them to the investor.
-    */
-    function assignTokens(address receiver, uint tokenAmount) private {
-        token.mint(receiver, tokenAmount);
+    //
+    // Modifiers
+    //
+
+    /** Modified allowing execution only if the presale is currently running.  */
+    modifier inState(State state) {
+        require(getState() == state);
+        _;
     }
 }
