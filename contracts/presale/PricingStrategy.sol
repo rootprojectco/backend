@@ -39,8 +39,6 @@ contract PricingStrategy {
         threshold2 = _threshold2;
     }
 
-
-
     /** Interface declaration. */
     function isPricingStrategy() public constant returns (bool) {
         return true;

@@ -146,14 +146,10 @@ contract Presale is Pausable {
 
         // Determine if it's a good time to accept investment from this participant
         if (getState() == State.PreFunding) {
-        // Are we whitelisted for early deposit
+            // Are we whitelisted for early deposit
             require(earlyParticipantWhitelist[receiver]);
-        } else if (getState() == State.Funding) {
-            // Retail participants can only come in when the presale is running
-            // pass
         } else {
-            // Unwanted state
-            revert();
+            require(getState() == State.Funding);
         }
 
         uint weiAmount = msg.value;
