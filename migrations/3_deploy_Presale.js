@@ -9,7 +9,7 @@ module.exports = async (deployer, network, accounts) => {
   else {
     let wallet = '0x001D51cDC8f4B378e136642DdB95Dfc4fF6a4B72'
     let now = Math.round(new Date().getTime()/1000);
-    await deployer.deploy(IouRootsPresaleToken, 'ROOTS IOU', 'IOR', 18)
+    await deployer.deploy(IouRootsPresaleToken, 'PRESALE ROOTS IOU', 'IOR', 18)
     await deployer.deploy(
       PricingStrategy,
       10000,

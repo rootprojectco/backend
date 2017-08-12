@@ -75,7 +75,7 @@ contract Presale is Pausable {
     /** How much tokens this presale has credited for each investor address */
     mapping (address => uint256) public tokenAmountOf;
 
-    /** Addresses that are allowed to invest even before ICO offical opens. For testing, for ICO partners, etc. */
+    /** Addresses that are allowed to invest even before ICO offical opens. Only for testing purpuses. */
     mapping (address => bool) public earlyParticipantWhitelist;
 
     /** State machine
