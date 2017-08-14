@@ -8,7 +8,7 @@ pragma solidity ^0.4.11;
 
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/lifecycle/Pausable.sol";
-import "./IouRootsPresaleToken.sol";
+import "./IMintableToken.sol";
 import "./PricingStrategy.sol";
 
 
@@ -34,7 +34,7 @@ contract Presale is Pausable {
     uint public MAX_INVESTMENTS_BEFORE_MULTISIG_CHANGE = 5;
 
     /* The token we are selling */
-    IouRootsPresaleToken public token;
+    IMintableToken public token;
 
     /* How we are going to price our offering */
     PricingStrategy public pricingStrategy;
@@ -118,7 +118,7 @@ contract Presale is Pausable {
         require(_start < _end);
         require(_tokensHardCap != 0);
 
-        token = IouRootsPresaleToken(_token);
+        token = IMintableToken(_token);
         setPricingStrategy(_pricingStrategy);
         multisigWallet = _multisigWallet;
         startsAt = _start;
