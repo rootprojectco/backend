@@ -1,5 +1,8 @@
 let BigNumber = require('bignumber.js');
-var TestRPC = require("ethereumjs-testrpc");
+let TestRPC = require("ethereumjs-testrpc");
+let chai = require('chai');
+chai.use(require("chai-as-promised"))
+chai.should()
 
 let Presale = artifacts.require("presale/Presale.sol")
 let PricingStrategy = artifacts.require("presale/PricingStrategy.sol")
@@ -10,9 +13,9 @@ contract('Presale', (accounts) => {
     const RATE1 = 11000
     const RATE2 = 12000
     const MINIMUM_WEI_AMOUNT = new BigNumber(web3.toWei(20, 'ether'))
-    const THRESHOLD1 = new BigNumber(web3.toWei(50, 'ether'))
-    const THRESHOLD2 = new BigNumber(web3.toWei(300, 'ether'))
-    const HARD_CAP = THRESHOLD2.mul(RATE2).mul(2)
+    const THRESHOLD1 = new BigNumber(web3.toWei(5, 'ether'))
+    const THRESHOLD2 = new BigNumber(web3.toWei(30, 'ether'))
+    const HARD_CAP = THRESHOLD2.mul(RATE2)
     const MINIMUM_FUNDING_GOAL = 100
     
     const WALLET = accounts[0]
@@ -80,6 +83,13 @@ contract('Presale', (accounts) => {
         let calculatedTokens = await contracts.pricingStrategy.calculateTokenAmount(MINIMUM_WEI_AMOUNT)
         assert(tokenBalance.equals(calculatedTokens))
         assert(getWalletBalance().minus(startBalance).equals(MINIMUM_WEI_AMOUNT))
+    })
+
+    it("should not allow to buy more tokens than hardcap", async () => {
+        let contracts = await getContracts(-10, 100)
+        await contracts.presale.sendTransaction({from: INVESTOR, value: THRESHOLD2})
+        let promise = contracts.presale.sendTransaction({from: INVESTOR, value: MINIMUM_WEI_AMOUNT})
+        promise.should.be.rejected
     })
 
 })
