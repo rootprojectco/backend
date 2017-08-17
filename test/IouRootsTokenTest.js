@@ -6,7 +6,6 @@ chai.should()
 //let Token = artifacts.require("zeppelin-solidity/contracts/token/SimpleToken.sol")
 let IouRootsToken = artifacts.require("./IouRootsToken.sol")
 
-
 contract('IouRootsToken', (accounts) => {
     let wallet = accounts[1]
     let beneficiary = accounts[2]
@@ -15,7 +14,6 @@ contract('IouRootsToken', (accounts) => {
     const VALUE_TO_SEND = 10000
     const RATE = 15000
     const DECIMAL = 18
-
 
     let deployParams = [
         RATE,
