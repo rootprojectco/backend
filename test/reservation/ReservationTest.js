@@ -4,11 +4,11 @@ let chai = require('chai');
 chai.use(require("chai-as-promised"))
 chai.should()
 
-let Presale = artifacts.require("presale/Presale.sol")
-let PricingStrategy = artifacts.require("presale/PricingStrategy.sol")
-let Token = artifacts.require("presale/IouRootsPresaleToken.sol")
+let Reservation = artifacts.require("reservation/Reservation.sol")
+let PricingStrategy = artifacts.require("reservation/PricingStrategy.sol")
+let Token = artifacts.require("reservation/IouRootsReservationToken.sol")
 
-contract('Presale', (accounts) => {
+contract('Reservation', (accounts) => {
     const RATE0 = 10000
     const RATE1 = 11000
     const RATE2 = 12000
@@ -36,7 +36,7 @@ contract('Presale', (accounts) => {
             THRESHOLD2
         )
 
-        let presale = await Presale.new(
+        let reservation = await Reservation.new(
             token.address,
             pricingStrategy.address,
             WALLET,
@@ -47,9 +47,9 @@ contract('Presale', (accounts) => {
             {from : OWNER}
         )
 
-        await token.transferOwnership(presale.address, {from : OWNER})
+        await token.transferOwnership(reservation.address, {from : OWNER})
 
-        return {presale, pricingStrategy, token};
+        return {reservation, pricingStrategy, token};
     }
 
     function getWalletBalance(){
@@ -57,17 +57,17 @@ contract('Presale', (accounts) => {
     }
 
     it("should change endsAt with setEndsAt", async () => {
-        let presale = (await getContracts(10, 100)).presale
-        let endsAt1 = await presale.endsAt()
-        await presale.setEndsAt(endsAt1.plus(5), {from: OWNER})
-        let endsAt2 = await presale.endsAt()
+        let reservation = (await getContracts(10, 100)).reservation
+        let endsAt1 = await reservation.endsAt()
+        await reservation.setEndsAt(endsAt1.plus(5), {from: OWNER})
+        let endsAt2 = await reservation.endsAt()
         assert(endsAt2.equals(endsAt1.plus(5)))
     })
 
     it("should allow investors to invest in Funding state", async () => {
         let contracts = await getContracts(-10, 100)
         let startBalance = getWalletBalance()
-        await contracts.presale.sendTransaction({from: INVESTOR, value: MINIMUM_WEI_AMOUNT})
+        await contracts.reservation.sendTransaction({from: INVESTOR, value: MINIMUM_WEI_AMOUNT})
         let tokenBalance = await contracts.token.balanceOf(INVESTOR)
         let calculatedTokens = await contracts.pricingStrategy.calculateTokenAmount(MINIMUM_WEI_AMOUNT)
         assert(tokenBalance.equals(calculatedTokens))
@@ -77,8 +77,8 @@ contract('Presale', (accounts) => {
     it("should allow earlyParticipantWhitelist to invest in PreFunding state", async () => {
         let contracts = await getContracts(10, 100)
         let startBalance = getWalletBalance()
-        await contracts.presale.setEarlyParicipantWhitelist(INVESTOR, true, {from : OWNER})
-        await contracts.presale.sendTransaction({from: INVESTOR, value: MINIMUM_WEI_AMOUNT})
+        await contracts.reservation.setEarlyParicipantWhitelist(INVESTOR, true, {from : OWNER})
+        await contracts.reservation.sendTransaction({from: INVESTOR, value: MINIMUM_WEI_AMOUNT})
         let tokenBalance = await contracts.token.balanceOf(INVESTOR)
         let calculatedTokens = await contracts.pricingStrategy.calculateTokenAmount(MINIMUM_WEI_AMOUNT)
         assert(tokenBalance.equals(calculatedTokens))
@@ -87,8 +87,8 @@ contract('Presale', (accounts) => {
 
     it("should not allow to buy more tokens than hardcap", async () => {
         let contracts = await getContracts(-10, 100)
-        await contracts.presale.sendTransaction({from: INVESTOR, value: THRESHOLD2})
-        let promise = contracts.presale.sendTransaction({from: INVESTOR, value: MINIMUM_WEI_AMOUNT})
+        await contracts.reservation.sendTransaction({from: INVESTOR, value: THRESHOLD2})
+        let promise = contracts.reservation.sendTransaction({from: INVESTOR, value: MINIMUM_WEI_AMOUNT})
         promise.should.be.rejected
     })
 

@@ -3,7 +3,7 @@ pragma solidity ^0.4.11;
 import 'zeppelin-solidity/contracts/token/MintableToken.sol';
 
 
-contract IouRootsPresaleToken is MintableToken {
+contract IouRootsReservationToken is MintableToken {
 
     string public name;
     
@@ -15,7 +15,7 @@ contract IouRootsPresaleToken is MintableToken {
     // This token is used for the preallocation of the ROOT token, that will be issued later.
     // Only Owner can transfer balances and mint ROOTS without payment.
     // Owner can finalize the contract by `finishMinting` transaction
-    function IouRootsPresaleToken(string _name, string _symbol, uint8 _decimals) {
+    function IouRootsReservationToken(string _name, string _symbol, uint8 _decimals) {
         name = _name;
         symbol = _symbol;
         decimals = _decimals;

@@ -8,7 +8,8 @@ module.exports = {
     live: {
       host: "localhost",
       port: 8545,
-      network_id: 1
+      network_id: 1,
+      gasPrice: 4000000000
     }
   }
 };

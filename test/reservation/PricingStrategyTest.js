@@ -1,6 +1,6 @@
 let BigNumber = require('bignumber.js');
 
-let PricingStrategy = artifacts.require("presale/PricingStrategy.sol")
+let PricingStrategy = artifacts.require("reservation/PricingStrategy.sol")
 
 contract('PricingStrategy', (accounts) => {
     const RATE0 = 10000
