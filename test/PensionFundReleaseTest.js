@@ -179,37 +179,24 @@ contract('PensionFundRelease', (accounts) => {
         release.logs[0].args.amount.toNumber().should.be.equal(0)
     })
 
-    it("#13 should refund all roots over the time", async() => {
-        let masterBalance
-        let balance = INITIAL_BALANCE
-        // Transfer previous balance away
-        await token.transfer(UNAUTHORIZED, FIRST_PAYMENT_PERCENT)
-        await token.transfer(fund.address, balance)
-        await fund.vote(false, "justification", {from: VALIDATORS[0]})
-        await fund.vote(false, "justification", {from: VALIDATORS[1]})
-        let refund = await fund.refundRoots({from: MASTER})
-        while (await fund.balance() > 0) {
-            web3.currentProvider.send({
-                jsonrpc: '2.0',
-                method: 'evm_increaseTime',
-                params: [TIME_INCREMENT],
-                id: new Date().getTime()
-            })
-            refund = await fund.refundRoots({from: MASTER})
-            refund.logs[0].args.amount.toNumber().should.be.equal(PAYOUT_PERCENT)
+    it("#13 should fail refund all roots", async() => {
+        let masterBalance = await token.balanceOf(MASTER)
+        let fundBalance = await token.balanceOf(fund.address)
+        await fund.vote(true, "justification", {from: VALIDATORS[0]})
+        await fund.vote(true, "justification", {from: VALIDATORS[1]})
+        try{
+            let refund = await fund.refundRoots({from: MASTER})
+            throw new Error('Unexpect refund: ', refund)
+        }catch (error){
+            let balance = await token.balanceOf(fund.address)
+            assert.equal(balance.toNumber(), fundBalance.toNumber())
+            let mBalance = await token.balanceOf(MASTER)
+            assert.equal(mBalance.toNumber(), masterBalance.toNumber())
         }
-        masterBalance = await token.balanceOf(MASTER)
-        masterBalance.toNumber().should.be.equal(INITIAL_BALANCE)
-
-        // recover previous MASTER balance
-        let balanceForBurn = await token.balanceOf(MASTER).then((res) => {
-            return res.c[0]
-        })
-        await token.transfer(0x00, balanceForBurn , {from: MASTER})
     })
 
     it("#14 should refund all roots and then refund balance of 0", async() => {
-        let masterBalance
+        let masterBalance = await token.balanceOf(MASTER)
         let firstPaymentPercent = PERCENT_DENOMINATOR
         let balance = INITIAL_BALANCE
         fund = await PensionFundRelease.new.apply(
@@ -221,15 +208,13 @@ contract('PensionFundRelease', (accounts) => {
                 PAYOUT_PERCENT
             )
         )
-        // Transfer previous balance away
-        await token.transfer(UNAUTHORIZED, INITIAL_BALANCE)
         await token.transfer(fund.address, balance)
         await fund.vote(false, "justification", {from: VALIDATORS[0]})
         await fund.vote(false, "justification", {from: VALIDATORS[1]})
         await fund.refundRoots({from: MASTER})
-        masterBalance = await token.balanceOf(MASTER)
-        masterBalance.toNumber().should.be.equal(INITIAL_BALANCE)
-        let refund = await fund.refundRoots({from: MASTER})
-        refund.logs[0].args.amount.toNumber().should.be.equal(0)
+        let mBalance = await token.balanceOf(MASTER)
+        assert.equal(mBalance.toNumber(), masterBalance.toNumber() + balance)
+        let fundBalance = await token.balanceOf(fund.address)
+        fundBalance.toNumber().should.be.equal(0)
     })
 });

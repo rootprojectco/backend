@@ -147,20 +147,8 @@ contract PensionFundRelease {
     function refundRoots() returns (uint refundedAmount) {
         // Confirm validators have refunded funds
         require(isBurnApproved());
-        // Confirm the next payment is due to be released
-        require(isFundFreezePeriodEnded());
-        if (!firtPaymentReleased) {
-            initialFunds = balance();
-            refundedAmount = getPaymentAmount();
-            firtPaymentReleased = true;
-        } else {
-            refundedAmount = getPaymentAmount();
-        }
-        if (refundedAmount > balance()) {
-            refundedAmount = balance();
-        }
         // Assumes intended interval is meant to recur regardless of claiming funds
-        paymentTime = paymentTime + recurrentPaymentInterval;
+        refundedAmount = balance();
         roots.transfer(master, refundedAmount);
         Refunded(refundedAmount, master);
     }
