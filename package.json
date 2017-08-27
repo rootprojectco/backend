@@ -24,6 +24,7 @@
     "zeppelin-solidity": "^1.2.0"
   },
   "devDependencies": {
+    "bignumber.js": "^4.0.2",
     "chai": "^4.1.0",
     "chai-as-promised": "^7.1.1"
   }
