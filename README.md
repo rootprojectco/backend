@@ -7,7 +7,7 @@ Website: https://rootproject.co
 ### Smart Contracts
 Smart Contract I: ProjectValidation - under construction.
 
-Smart Contract II: PensionFundRelease - "medium-term pension fund", described in the RootProject whitepaper. The contract freezes funds for a custom period of time, and releases funds continously after the approval of validators.
+Smart Contract II: PensionFundRelease - the "medium-term pension fund", as described in the RootProject whitepaper. The contract freezes funds for a custom period of time, and releases funds continously after the approval of validators.
 
 ## Specification
 
