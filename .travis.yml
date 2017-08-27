@@ -6,10 +6,10 @@ node_js:
 - "8"
 
 install:
-- npm install -g truffle ethereumjs-testrpc solium
+- npm install -g truffle ethereumjs-testrpc
 - npm install
 - truffle install
 
 script:
 - testrpc &> /dev/null & npm test
-- solium --dir .
+- npm run lint

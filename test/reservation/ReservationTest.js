@@ -1,5 +1,4 @@
 let BigNumber = require('bignumber.js');
-let TestRPC = require("ethereumjs-testrpc");
 let chai = require('chai');
 chai.use(require("chai-as-promised"))
 chai.should()
