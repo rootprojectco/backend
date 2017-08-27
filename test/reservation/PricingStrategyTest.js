@@ -2,7 +2,7 @@ let BigNumber = require('bignumber.js');
 
 let PricingStrategy = artifacts.require("reservation/PricingStrategy.sol")
 
-contract('PricingStrategy', (accounts) => {
+contract('PricingStrategy', () => {
     const RATE0 = 10000
     const RATE1 = 11000
     const RATE2 = 12000

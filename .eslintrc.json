@@ -11,7 +11,10 @@
     },
     "globals": {
         "artifacts": true,
-        "contract": true
+        "contract": true,
+        "web3": true,
+        "assert": true,
+        "console": true
     },
     "rules": {
         "indent": [

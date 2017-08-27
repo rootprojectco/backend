@@ -41,11 +41,13 @@ contract('PensionFundRelease', (accounts) => {
             )
         )
     })
+    
     it("#1 should return firstPaymentPercent", async () => {
         let percent = await fund.firstPaymentPercent.call()
         let number = await percent.toNumber()
         number.should.equal(FIRST_PAYMENT_PERCENT)
     })
+
     it("#2 should return VALIDATORS", async () => {
         let validator = await fund.validators.call(0)
         validator.should.equal(VALIDATORS[0])
@@ -57,33 +59,39 @@ contract('PensionFundRelease', (accounts) => {
         let vote = await fund.votes.call(index)
         vote[2].should.be.equal("justification")
     })
+
     it("#4 should not allow non-VALIDATORS to vote", async () => {
         fund.vote(true, "justification", { from: UNAUTHORIZED }).should.be.rejected
     })
+
     it("#5 should allow release after all VALIDATORS approval", async () => {
         await fund.vote(true, "justification", { from: VALIDATORS[0] })
         await fund.vote(true, "justification", { from: VALIDATORS[1] })
         let approval = await fund.isReleaseApproved.call()
         approval.should.be.equal(true)
     })
+
     it("#6 should not allow release if not all VALIDATORS approved release", async () => {
         await fund.vote(true, "justification", { from: VALIDATORS[0] })
         let vote = await fund.isReleaseApproved.call()
         vote.should.be.equal(false)
     })
+
     it("#7 should allow burn after all VALIDATORS rejection", async () => {
         await fund.vote(false, "justification", { from: VALIDATORS[0] })
         await fund.vote(false, "justification", { from: VALIDATORS[1] })
         let approval = await fund.isBurnApproved.call()
         approval.should.be.equal(true)
     })
+
     it("#8 should not allow burn if not all VALIDATORS rejected release", async () => {
         await fund.vote(false, "justification", { from: VALIDATORS[0] })
         let approval = await fund.isBurnApproved.call()
         approval.should.be.equal(false)
     })
+
     it("#9 should release roots if all conditions met", async () => {
-        let workerBalance, balanceNumber
+        let workerBalance
         let balance = INITIAL_BALANCE
         await token.transfer(fund.address, balance)
         await fund.vote(true, "justification", { from: VALIDATORS[0] })
@@ -94,8 +102,10 @@ contract('PensionFundRelease', (accounts) => {
         workerBalance = await token.balanceOf(WORKER)
         workerBalance.toNumber().should.be.equal(balance * FIRST_PAYMENT_PERCENT / PERCENT_DENOMINATOR)
     })
+
     it("#10 should attempt to release roots before freeze period ends and fail", async () => {
         let balance = INITIAL_BALANCE
+        let error
         fund = await PensionFundRelease.new.apply(
             this,
             deployParams(
@@ -109,14 +119,15 @@ contract('PensionFundRelease', (accounts) => {
         await fund.vote(true, "justification", { from: VALIDATORS[0] })
         await fund.vote(true, "justification", { from: VALIDATORS[1] })
         try {
-            let release = await fund.releaseRoots({ from: WORKER })
+            await fund.releaseRoots({ from: WORKER })
         } catch (err) {
             error = err
         }
         error.should.be.a("Error")
     })
+
     it("#11 should release all roots over time", async () => {
-        let workerBalance, balanceNumber
+        let workerBalance
         let balance = INITIAL_BALANCE
         // Transfer previous balance away
         await token.transfer(UNAUTHORIZED, FIRST_PAYMENT_PERCENT, { from: WORKER })
@@ -137,10 +148,10 @@ contract('PensionFundRelease', (accounts) => {
         workerBalance = await token.balanceOf(WORKER)
         workerBalance.toNumber().should.be.equal(INITIAL_BALANCE)
     })
+
     it("#12 should release all roots and then release balance of 0", async () => {
-        let workerBalance, balanceNumber
+        let workerBalance
         let firstPaymentPercent = PERCENT_DENOMINATOR
-        let error;
         let balance = INITIAL_BALANCE
         fund = await PensionFundRelease.new.apply(
             this,
