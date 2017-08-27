@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "truffle test",
-    "lint": "./node_modules/.bin/eslint **/*.js"
+    "lint": "./node_modules/.bin/eslint **/*.js && solium --dir ."
   },
   "repository": {
     "type": "git",
@@ -28,6 +28,7 @@
     "bignumber.js": "^4.0.2",
     "chai": "^4.1.0",
     "chai-as-promised": "^7.1.1",
-    "eslint": "^4.0.0-rc.0"
+    "eslint": "^4.0.0-rc.0",
+    "solium": "^0.5.5"
   }
 }

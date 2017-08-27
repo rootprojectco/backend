@@ -12,5 +12,4 @@ install:
 
 script:
 - testrpc &> /dev/null & npm test
-- solium --dir .
-- ./node_modules/.bin/eslint **/*.js
+- npm run lint
