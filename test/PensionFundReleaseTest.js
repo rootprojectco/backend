@@ -13,6 +13,7 @@ contract('PensionFundRelease', (accounts) => {
     let firstPaymentTime = web3.eth.getBlock(web3.eth.blockNumber).timestamp
     const VALIDATORS = [accounts[0], accounts[1]]
     const WORKER = accounts[2]
+    const MASTER = accounts[4]
     const UNAUTHORIZED = accounts[3]
     const INITIAL_BALANCE = 100
     const PERCENT_DENOMINATOR = 100
