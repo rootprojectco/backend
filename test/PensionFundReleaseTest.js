@@ -13,23 +13,27 @@ contract('PensionFundRelease', (accounts) => {
     let firstPaymentTime = web3.eth.getBlock(web3.eth.blockNumber).timestamp
     const VALIDATORS = [accounts[0], accounts[1]]
     const WORKER = accounts[2]
+    const MASTER = accounts[4]
     const UNAUTHORIZED = accounts[3]
     const INITIAL_BALANCE = 100
     const PERCENT_DENOMINATOR = 100
     const PAYOUT_PERCENT = 40
-    let deployParams =
-        (_firstPaymentTime, _firstPaymentPercent, _token, _payoutPercent) =>
-            [
-                VALIDATORS,
-                WORKER,
-                _firstPaymentPercent,
-                _firstPaymentTime,
-                TIME_INCREMENT,
-                _payoutPercent,
-                _token
-            ]
+
+    let deployParams = (_firstPaymentTime, _firstPaymentPercent, _token, _payoutPercent) =>
+        [
+            VALIDATORS,
+            WORKER,
+            MASTER,
+            _firstPaymentPercent,
+            _firstPaymentTime,
+            TIME_INCREMENT,
+            _payoutPercent,
+            _token
+        ]
+
     let token, fund
-    beforeEach(async () => {
+
+    beforeEach(async() => {
         token = await Token.deployed()
         fund = await PensionFundRelease.new.apply(
             this,
@@ -41,7 +45,7 @@ contract('PensionFundRelease', (accounts) => {
             )
         )
     })
-    
+
     it("#1 should return firstPaymentPercent", async () => {
         let percent = await fund.firstPaymentPercent.call()
         let number = await percent.toNumber()
@@ -172,5 +176,44 @@ contract('PensionFundRelease', (accounts) => {
         workerBalance.toNumber().should.be.equal(INITIAL_BALANCE)
         release = await fund.releaseRoots({ from: WORKER })
         release.logs[0].args.amount.toNumber().should.be.equal(0)
+    })
+
+    it("#13 should fail refund all roots", async() => {
+        let masterBalance = await token.balanceOf(MASTER)
+        let fundBalance = await token.balanceOf(fund.address)
+        await fund.vote(true, "justification", {from: VALIDATORS[0]})
+        await fund.vote(true, "justification", {from: VALIDATORS[1]})
+        try{
+            let refund = await fund.refundRoots({from: MASTER})
+            throw new Error('Unexpect refund: ', refund)
+        }catch (error){
+            let balance = await token.balanceOf(fund.address)
+            assert.equal(balance.toNumber(), fundBalance.toNumber())
+            let mBalance = await token.balanceOf(MASTER)
+            assert.equal(mBalance.toNumber(), masterBalance.toNumber())
+        }
+    })
+
+    it("#14 should refund all roots and then refund balance of 0", async() => {
+        let masterBalance = await token.balanceOf(MASTER)
+        let firstPaymentPercent = PERCENT_DENOMINATOR
+        let balance = INITIAL_BALANCE
+        fund = await PensionFundRelease.new.apply(
+            this,
+            deployParams(
+                firstPaymentTime,
+                firstPaymentPercent,
+                token.address,
+                PAYOUT_PERCENT
+            )
+        )
+        await token.transfer(fund.address, balance)
+        await fund.vote(false, "justification", {from: VALIDATORS[0]})
+        await fund.vote(false, "justification", {from: VALIDATORS[1]})
+        await fund.refundRoots({from: MASTER})
+        let mBalance = await token.balanceOf(MASTER)
+        assert.equal(mBalance.toNumber(), masterBalance.toNumber() + balance)
+        let fundBalance = await token.balanceOf(fund.address)
+        fundBalance.toNumber().should.be.equal(0)
     })
 });
