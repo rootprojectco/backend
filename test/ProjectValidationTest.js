@@ -9,7 +9,7 @@ let ProjectValidation = artifacts.require("./ProjectValidation.sol")
 let fundToken, rootsToken, additionalToken
 let project
 
-contract('PensionFundRelease', accounts => {
+contract('ProjectValidation', accounts => {
 
     const MANAGER = accounts[0]
     const CHECKER = accounts[1]
@@ -37,8 +37,10 @@ contract('PensionFundRelease', accounts => {
         project = await ProjectValidation.new.apply(this, deployParams())
     })
 
-    it("#1 should be test deploy", async() =>{
-        assert.equal(1,1)
+    it("#1 should sign the project", async() =>{
+        let result = await project.sign.call();
+        console.log(result);
+        assert.equal(result, true)
     })
 
 });

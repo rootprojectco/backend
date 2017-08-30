@@ -22,6 +22,7 @@ contract ProjectValidation {
 
     address[] public workers;
     mapping (address => uint) public workersBalances;
+    mapping (address => bool) public signatures;
 
     function ProjectValidation(
         address _manager,
@@ -40,9 +41,49 @@ contract ProjectValidation {
         roots = ERC20Basic(rootsAddress);
         additionalTokens = ERC20Basic(additionalTokenAddress);
         workers = _workers;
+        signatures[starter] = false;
+        signatures[manager] = false;
+        signatures[checker] = false;
         for (uint8 i = 0; i < workers.length; i++){
             workersBalances[i] = 0;
         }
+    }
+
+    modifier onlyValidator() {
+        require(msg.sender == manager || msg.sender == starter || msg.sender == checker);
+        _;
+    }
+
+    function sign() onlyValidator returns (bool signed){
+        signatures[msg.sender] = true;
+    }
+
+    function checkRole() returns (bool access){
+
+    }
+
+    function sendTokensToWorkers() returns (uint amount){
+
+    }
+
+    function sendTokensBack() returns (uint amount){
+
+    }
+
+    function closeProject() returns (bool success){
+
+    }
+
+    function changeRootsRate() returns (bool success){
+
+    }
+
+    function changeAdditionalTokensRate() returns (bool success){
+
+    }
+
+    function changeWorkerBalance() returns (bool success){
+
     }
 
 }
