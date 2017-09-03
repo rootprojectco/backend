@@ -9,7 +9,7 @@ let ProjectValidation = artifacts.require("./ProjectValidation.sol")
 let fundToken
 let project
 
-contract('ProjectValidation', accounts => {
+contract('ProjectValidation', (accounts) => {
 
     const STARTER = accounts[0]
     const MANAGER = accounts[1]
