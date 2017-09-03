@@ -3,26 +3,20 @@ let ProjectValidation = artifacts.require("./ProjectValidation.sol")
 
 module.exports = async (deployer, network, accounts) => {
 
-    const MANAGER = accounts[0]
-    const CHECKER = accounts[1]
-    const WORKERS = [accounts[2], accounts[3]]
-    const ROOTS_RATE = 1
-    const ADDITIONAL_TOKEN_RATE = 1
+    const MANAGER = accounts[1]
+    const CHECKER = accounts[2]
+    const WORKERS = [accounts[3], accounts[4]]
+    const EXCHANGER = accounts[5]
 
     let fundToken = await Token.new()
-    let rootsToken = await Token.new()
-    let additionalToken = await Token.new()
 
     await deployer.deploy(
         ProjectValidation,
         MANAGER,
         CHECKER,
+        EXCHANGER,
         WORKERS,
-        fundToken.address,
-        rootsToken.address,
-        additionalToken.address,
-        ROOTS_RATE,
-        ADDITIONAL_TOKEN_RATE
+        fundToken.address
     )
 
 }
