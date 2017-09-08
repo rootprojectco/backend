@@ -1,8 +1,8 @@
 pragma solidity ^0.4.10;
 
-
 import "zeppelin-solidity/contracts/token/SimpleToken.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
+
 
 contract ProjectValidation {
 
@@ -66,7 +66,12 @@ contract ProjectValidation {
     ) {
         starter = msg.sender;
         manager = _manager;
-        checker = Checker(_checker, false, false, false);
+        checker = Checker(
+            _checker,
+            false,
+            false,
+            false
+        );
         exchangerContract = _exchangerContract;
         fundTokens = SimpleToken(fundTokenAddress);
         workers = _workers;
@@ -127,7 +132,7 @@ contract ProjectValidation {
     function tryToCompleteProject() onlyValidator {
         if ( ( !signatures[starter] || !signatures[manager] ) && !checker.presence) {
             checkerCall();
-        } else if ( (checker.signed && checker.signature) || (signatures[starter] && signatures[manager]) ){
+        } else if ( (checker.signed && checker.signature) || (signatures[starter] && signatures[manager]) ) {
             changeStateTo(Stages.readyToComplete);
             completeProject(true);
         } else {
@@ -143,7 +148,7 @@ contract ProjectValidation {
 
     function closeProject() internal atStage(Stages.closing) {
         projectClosed = true;
-        if (projectCompleted){
+        if (projectCompleted) {
             changeStateTo(Stages.successfullyClosed);
         }else {
             changeStateTo(Stages.unsuccessfullyClosed);
