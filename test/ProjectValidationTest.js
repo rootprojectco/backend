@@ -39,7 +39,7 @@ contract('ProjectValidation', (accounts) => {
         let manager = await project.manager();
         manager.should.be.equal(MANAGER)
         let checker = await project.checker();
-        checker.should.be.equal(CHECKER)
+        checker[0].should.be.equal(CHECKER)
         let exchangerAddress = await project.exchangerContract()
         exchangerAddress.should.be.equal(EXCHANGER)
         let firstWorker = await project.workers.call(0)
@@ -108,14 +108,14 @@ contract('ProjectValidation', (accounts) => {
     })
 
     it("#10 should try to close project without necessary signatures and call the checker", async() => {
-        let checkerPrecense = await project.checkerPresence.call()
-        checkerPrecense.should.be.equal(false)
+        let checker = await project.checker()
+        checker[3].should.be.equal(false)
         await project.sign({from: STARTER})
         await project.closeProject()
         let closed = await project.projectClosed.call()
         closed.should.be.equal(false)
-        let precense = await project.checkerPresence.call()
-        precense.should.be.equal(true)
+        let checkerInfo = await project.checker()
+        checkerInfo[3].should.be.equal(true)
     })
 
 });
