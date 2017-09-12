@@ -11,6 +11,15 @@ let project
 
 contract('ProjectValidation', (accounts) => {
 
+    const STAGES = {
+        collectingSignatures: 0,
+        checkerWork: 1,
+        readyToComplete: 2,
+        closing: 3,
+        successfullyClosed: 4,
+        unsuccessfullyClosed: 5
+    }
+
     const STARTER = accounts[0]
     const MANAGER = accounts[1]
     const CHECKER = accounts[2]
@@ -96,13 +105,14 @@ contract('ProjectValidation', (accounts) => {
 
     it("#8 should reject to complete project if no necessary signatures", async() => {
         await project.sign({from: STARTER})
-        await project.completeProject({from: STARTER}).should.be.rejected
+        let completed = await project.projectCompleted.call()
+        completed.should.be.equal(false)
     })
 
     it("#9 should complete project", async() => {
         await project.sign({from: STARTER})
         await project.sign({from: MANAGER})
-        await project.completeProject({from: STARTER})
+        await project.tryToCompleteProject({from: STARTER})
         let completed = await project.projectCompleted.call()
         completed.should.be.equal(true)
     })
@@ -111,11 +121,28 @@ contract('ProjectValidation', (accounts) => {
         let checker = await project.checker()
         checker[3].should.be.equal(false)
         await project.sign({from: STARTER})
-        await project.closeProject()
+        await project.tryToCompleteProject()
         let closed = await project.projectClosed.call()
         closed.should.be.equal(false)
         let checkerInfo = await project.checker()
         checkerInfo[3].should.be.equal(true)
+    })
+
+    it("#11 should be right stages", async() => {
+        let stage1 = await project.stage.call()
+        stage1.c[0].should.be.equal(STAGES.collectingSignatures)
+        await project.tryToCompleteProject({from: STARTER})
+        let stage2 = await project.stage.call()
+        stage2.c[0].should.be.equal(STAGES.checkerWork)
+        await project.checkerSign(true, {from: CHECKER})
+        let stage3 = await project.stage.call()
+        stage3.c[0].should.be.equal(STAGES.readyToComplete)
+        await project.tryToCompleteProject()
+        let stage4 = await project.stage.call()
+        stage4.c[0].should.be.equal(STAGES.closing)
+        await project.closeProject()
+        let stage5 = await project.stage.call()
+        stage5.c[0].should.be.equal(STAGES.successfullyClosed)
     })
 
 });

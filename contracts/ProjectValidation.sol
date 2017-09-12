@@ -38,7 +38,7 @@ contract ProjectValidation {
 
     uint public projectBalance;
 
-    uint256  public workerRatio = 2;
+    uint public workerRatio = 2;
 
     uint public amountForRoots = 0;
 
@@ -51,7 +51,6 @@ contract ProjectValidation {
     mapping (address => bool) public signatures;
 
     event Singed(address who);
-
     event Closed();
     event StateChanged(Stages previous, Stages current);
 
@@ -99,7 +98,7 @@ contract ProjectValidation {
         _;
     }
 
-    function changeStateTo (Stages _stage) {
+    function changeStateTo (Stages _stage) internal {
         StateChanged(stage, _stage);
         stage = _stage;
     }
@@ -146,7 +145,7 @@ contract ProjectValidation {
         projectBalance = fundTokens.balanceOf(this);
     }
 
-    function closeProject() internal atStage(Stages.closing) {
+    function closeProject() onlyValidator atStage(Stages.closing) {
         projectClosed = true;
         if (projectCompleted) {
             changeStateTo(Stages.successfullyClosed);
