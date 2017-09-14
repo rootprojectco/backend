@@ -81,10 +81,8 @@ contract ProjectValidation {
         }
     }
 
-    // validators are starter & manager.
-    // checker is not validator
     modifier onlyValidator() {
-        require(msg.sender == manager || msg.sender == starter);
+        require(msg.sender == manager || msg.sender == starter || msg.sender == checker.addr);
         _;
     }
 
@@ -168,7 +166,7 @@ contract ProjectValidation {
         return true;
     }
 
-    function sendTokensBack() internal onlyValidator atStage(Stages.unsuccessfullyClosed) returns (uint amount) {
+    function sendTokensBack() onlyValidator atStage(Stages.unsuccessfullyClosed) returns (uint amount) {
         assert(fundTokens.transfer(starter, fundTokens.balanceOf(this)));
     }
 

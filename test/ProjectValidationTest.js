@@ -145,4 +145,50 @@ contract('ProjectValidation', (accounts) => {
         stage5.c[0].should.be.equal(STAGES.successfullyClosed)
     })
 
+    it("#12 should success to complete project and distribute tokens", async() => {
+        const FIRST_WORKER_AMOUNT = 40
+        const SECOND_WORKER_AMOUNT = 60
+        let expectedBalance1 = Math.floor(FIRST_WORKER_AMOUNT * RATIO)
+        let expectedBalance2 = Math.floor(SECOND_WORKER_AMOUNT * RATIO)
+        await fundToken.transfer(project.address, 100)
+        await project.changeWorkerBalance(WORKERS[0], FIRST_WORKER_AMOUNT)
+        await project.changeWorkerBalance(WORKERS[1], SECOND_WORKER_AMOUNT)
+        await project.sign({from: STARTER})
+        await project.sign({from: MANAGER})
+        await project.tryToCompleteProject({from: STARTER})
+        await project.closeProject({from: STARTER})
+        let stage = await project.stage.call()
+        stage.c[0].should.be.equal(STAGES.successfullyClosed)
+        let expectedRootsBalance = await project.amountForRoots.call()
+        await project.sendTokensToWorkers({from: STARTER})
+        let workerBalance1 = await fundToken.balanceOf(WORKERS[0])
+        let workerBalance2 = await fundToken.balanceOf(WORKERS[1])
+        let rootsBalance = await fundToken.balanceOf(EXCHANGER)
+        let projectBalance = await fundToken.balanceOf(project.address)
+        workerBalance1.toNumber().should.be.equal(expectedBalance1)
+        workerBalance2.toNumber().should.be.equal(expectedBalance2)
+        rootsBalance.toNumber().should.be.equal(expectedRootsBalance.toNumber())
+        projectBalance.toNumber().should.be.equal(0)
+    })
+
+    it("#13 should unsuccessful to complete project and distribute tokens", async() => {
+        const AMOUNT = 10000
+        let starterBalance = await fundToken.balanceOf(STARTER)
+        await fundToken.transfer(project.address, starterBalance.toNumber(), {from: STARTER})
+        let projectBalance = await fundToken.balanceOf(project.address)
+        projectBalance.toNumber().should.be.equal(AMOUNT)
+        await project.sign({from: MANAGER})
+        await project.tryToCompleteProject({from: STARTER})
+        await project.checkerSign(false, {from: CHECKER})
+        await project.tryToCompleteProject({from: CHECKER})
+        await project.closeProject({from: CHECKER})
+        let stage = await project.stage.call()
+        stage.c[0].should.be.equal(STAGES.unsuccessfullyClosed)
+        await project.sendTokensBack({from: CHECKER})
+        starterBalance = await fundToken.balanceOf(STARTER)
+        projectBalance = await fundToken.balanceOf(project.address)
+        starterBalance.toNumber().should.be.equal(AMOUNT)
+        projectBalance.toNumber().should.be.equal(0)
+    })
+
 });
