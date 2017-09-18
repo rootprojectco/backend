@@ -7,12 +7,12 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 contract ProjectValidation {
 
     enum Stages {
-        collectingSignatures,
-        checkerWork,
-        readyToComplete,
-        closing,
-        successfullyClosed,
-        unsuccessfullyClosed
+        CollectingSignatures,
+        CheckerWork,
+        ReadyToComplete,
+        Closing,
+        SuccessfullyClosed,
+        UnsuccessfullyClosed
     }
 
     struct Checker {
@@ -54,7 +54,7 @@ contract ProjectValidation {
     event Closed();
     event StateChanged(Stages previous, Stages current);
 
-    Stages public stage = Stages.collectingSignatures;
+    Stages public stage = Stages.CollectingSignatures;
 
     function ProjectValidation(
         address _manager,
@@ -106,19 +106,14 @@ contract ProjectValidation {
         changeStateTo(_stage);
     }
 
-    function sign() onlyValidator atStage(Stages.collectingSignatures) returns (bool signed) {
+    function sign() onlyValidator atStage(Stages.CollectingSignatures) returns (bool signed) {
         signatures[msg.sender] = true;
         return true;
     }
 
-    function checkerSign(bool signature) onlyChecker atStage(Stages.checkerWork) afterExecutingGoToState(Stages.readyToComplete) {
+    function checkerSign(bool signature) onlyChecker atStage(Stages.CheckerWork) afterExecutingGoToState(Stages.ReadyToComplete) {
         checker.signed = true;
         checker.signature = signature;
-    }
-
-    function checkerCall() internal {
-        changeStateTo(Stages.checkerWork);
-        checker.presence = true;
     }
 
     function getWorkerBalance(address worker) returns (uint balance) {
@@ -127,33 +122,35 @@ contract ProjectValidation {
     }
 
     function tryToCompleteProject() onlyValidator {
-        if ( ( !signatures[starter] || !signatures[manager] ) && !checker.presence) {
-            checkerCall();
+        if (! ( (signatures[starter] && signatures[manager] ) || checker.presence)) {
+            changeStateTo(Stages.CheckerWork);
+            checker.presence = true;
         } else if ( (checker.signed && checker.signature) || (signatures[starter] && signatures[manager]) ) {
-            changeStateTo(Stages.readyToComplete);
+            changeStateTo(Stages.ReadyToComplete);
             completeProject(true);
         } else {
-            changeStateTo(Stages.readyToComplete);
+            changeStateTo(Stages.ReadyToComplete);
             completeProject(false);
         }
     }
 
-    function completeProject(bool decision) internal atStage(Stages.readyToComplete) afterExecutingGoToState(Stages.closing) {
+    function completeProject(bool decision) internal atStage(Stages.ReadyToComplete) afterExecutingGoToState(Stages.Closing) {
         projectCompleted = decision;
         projectBalance = fundTokens.balanceOf(this);
     }
 
-    function closeProject() onlyValidator atStage(Stages.closing) {
+    function closeProject() onlyValidator atStage(Stages.Closing) {
         projectClosed = true;
         if (projectCompleted) {
-            changeStateTo(Stages.successfullyClosed);
+            changeStateTo(Stages.SuccessfullyClosed);
         }else {
-            changeStateTo(Stages.unsuccessfullyClosed);
+            changeStateTo(Stages.UnsuccessfullyClosed);
         }
     }
 
-    function sendTokensToWorkers() atStage(Stages.successfullyClosed) returns (uint amount) {
-        for (uint8 i = 0; i < workers.length; i++) {
+    function sendTokensToWorkers(uint8 _start, uint8 _end) atStage(Stages.SuccessfullyClosed) returns (uint amount) {
+        require(_start >= 0 && _end <= workers.length);
+        for (uint8 i = _start; i < _end; i++) {
             uint workerBalance = workersBalances[workers[i]];
             projectBalance -= workerBalance;
             assert(fundTokens.transfer(workers[i], workerBalance));
@@ -161,12 +158,12 @@ contract ProjectValidation {
         assert(sendToRoots());
     }
 
-    function sendToRoots() internal onlyValidator atStage(Stages.successfullyClosed) returns (bool success) {
+    function sendToRoots() internal onlyValidator atStage(Stages.SuccessfullyClosed) returns (bool success) {
         assert(fundTokens.transfer(exchangerContract, amountForRoots));
         return true;
     }
 
-    function sendTokensBack() onlyValidator atStage(Stages.unsuccessfullyClosed) returns (uint amount) {
+    function sendTokensBack() onlyValidator atStage(Stages.UnsuccessfullyClosed) returns (uint amount) {
         assert(fundTokens.transfer(starter, fundTokens.balanceOf(this)));
     }
 

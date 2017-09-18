@@ -160,7 +160,7 @@ contract('ProjectValidation', (accounts) => {
         let stage = await project.stage.call()
         stage.c[0].should.be.equal(STAGES.successfullyClosed)
         let expectedRootsBalance = await project.amountForRoots.call()
-        await project.sendTokensToWorkers({from: STARTER})
+        await project.sendTokensToWorkers(0, WORKERS.length, {from: STARTER})
         let workerBalance1 = await fundToken.balanceOf(WORKERS[0])
         let workerBalance2 = await fundToken.balanceOf(WORKERS[1])
         let rootsBalance = await fundToken.balanceOf(EXCHANGER)
