@@ -8,13 +8,11 @@ let PricingStrategy = artifacts.require("reservation/PricingStrategy.sol")
 let Token = artifacts.require("reservation/IouRootsReservationToken.sol")
 
 contract('Reservation', (accounts) => {
-    const RATE0 = 10000
+    const NEW_RATE_TIME = 1
     const RATE1 = 11000
     const RATE2 = 12000
-    const MINIMUM_WEI_AMOUNT = new BigNumber(web3.toWei(20, 'ether'))
-    const THRESHOLD1 = new BigNumber(web3.toWei(5, 'ether'))
-    const THRESHOLD2 = new BigNumber(web3.toWei(30, 'ether'))
-    const HARD_CAP = THRESHOLD2.mul(RATE2)
+    const MINIMUM_WEI_AMOUNT = new BigNumber(web3.toWei(1, 'ether'))
+    const HARD_CAP = new BigNumber(web3.toWei(5, 'ether')).mul(RATE2)
     const MINIMUM_FUNDING_GOAL = 100
     
     const WALLET = accounts[0]
@@ -27,12 +25,10 @@ contract('Reservation', (accounts) => {
         let now = web3.eth.getBlock(web3.eth.blockNumber).timestamp
 
         let pricingStrategy = await PricingStrategy.new(
-            RATE0,
+            NEW_RATE_TIME,
             RATE1,
             RATE2,
             MINIMUM_WEI_AMOUNT,
-            THRESHOLD1,
-            THRESHOLD2
         )
 
         let reservation = await Reservation.new(
@@ -86,7 +82,7 @@ contract('Reservation', (accounts) => {
 
     it("should not allow to buy more tokens than hardcap", async () => {
         let contracts = await getContracts(-10, 100)
-        await contracts.reservation.sendTransaction({from: INVESTOR, value: THRESHOLD2})
+        await contracts.reservation.sendTransaction({from: INVESTOR, value: HARD_CAP.div(RATE2)})
         let promise = contracts.reservation.sendTransaction({from: INVESTOR, value: MINIMUM_WEI_AMOUNT})
         promise.should.be.rejected
     })
