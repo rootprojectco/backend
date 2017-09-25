@@ -15,7 +15,7 @@ module.exports = (deployer, network) => {
         const WALLET = '0x6fE56527Be2AAf18347dd772fc333504B83c4447'
         const NOW = web3.eth.getBlock(web3.eth.blockNumber).timestamp
         const START = NOW
-        const STOP = 1510531200 //  Monday, November 13, 2017 00:00:00 UTC
+        const STOP = 1510617600 //  Monday, November 14, 2017 00:00:00 UTC
 
         deployer.deploy(
             PricingStrategy,
