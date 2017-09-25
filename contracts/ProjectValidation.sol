@@ -8,9 +8,10 @@ contract ProjectValidation {
 
     enum Stages {
         CollectingSignatures,
+        TryToCompleteProjectStage,
         CheckerWork,
-        ReadyToComplete,
-        Closing,
+        ProjectCompleted,
+        ProjectNonCompleted,
         SuccessfullyClosed,
         UnsuccessfullyClosed
     }
@@ -29,10 +30,6 @@ contract ProjectValidation {
     Checker public checker;
 
     address public exchangerContract;
-
-    bool public projectClosed;
-
-    bool public projectCompleted;
 
     uint public additionalTokenRate;
 
@@ -111,9 +108,13 @@ contract ProjectValidation {
         return true;
     }
 
-    function checkerSign(bool signature) onlyChecker atStage(Stages.CheckerWork) afterExecutingGoToState(Stages.ReadyToComplete) {
+    function checkerSign(bool signature) onlyChecker atStage(Stages.CheckerWork) afterExecutingGoToState(Stages.TryToCompleteProjectStage) {
         checker.signed = true;
         checker.signature = signature;
+    }
+
+    function stopCollectSignatures() onlyValidator atStage(Stages.CollectingSignatures) {
+        changeStateTo(Stages.TryToCompleteProjectStage);
     }
 
     function getWorkerBalance(address worker) returns (uint balance) {
@@ -121,29 +122,35 @@ contract ProjectValidation {
         balance = fundWorkerBalance * 2 / 3 * additionalTokenRate;
     }
 
-    function tryToCompleteProject() onlyValidator {
+    function tryToCompleteProject() onlyValidator atStage(Stages.TryToCompleteProjectStage) {
         if (! ( (signatures[starter] && signatures[manager] ) || checker.presence)) {
             changeStateTo(Stages.CheckerWork);
             checker.presence = true;
         } else if ( (checker.signed && checker.signature) || (signatures[starter] && signatures[manager]) ) {
-            changeStateTo(Stages.ReadyToComplete);
             completeProject(true);
         } else {
-            changeStateTo(Stages.ReadyToComplete);
             completeProject(false);
         }
     }
 
-    function completeProject(bool decision) internal atStage(Stages.ReadyToComplete) afterExecutingGoToState(Stages.Closing) {
-        projectCompleted = decision;
+    function completeProject(bool decision) internal atStage(Stages.TryToCompleteProjectStage) {
+        if (decision) {
+            changeStateTo(Stages.ProjectCompleted);
+        } else {
+            changeStateTo(Stages.ProjectNonCompleted);
+        }
         projectBalance = fundTokens.balanceOf(this);
     }
 
-    function closeProject() onlyValidator atStage(Stages.Closing) {
-        projectClosed = true;
-        if (projectCompleted) {
+    function tryToCloseProject() onlyValidator {
+        require(stage == Stages.ProjectCompleted || stage == Stages.ProjectNonCompleted);
+        closeProject();
+    }
+
+    function closeProject() internal onlyValidator {
+        if (stage == Stages.ProjectCompleted) {
             changeStateTo(Stages.SuccessfullyClosed);
-        }else {
+        } else {
             changeStateTo(Stages.UnsuccessfullyClosed);
         }
     }

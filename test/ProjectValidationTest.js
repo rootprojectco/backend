@@ -12,12 +12,13 @@ let project
 contract('ProjectValidation', (accounts) => {
 
     const STAGES = {
-        collectingSignatures: 0,
-        checkerWork: 1,
-        readyToComplete: 2,
-        closing: 3,
-        successfullyClosed: 4,
-        unsuccessfullyClosed: 5
+        CollectingSignatures: 0,
+        TryToCompleteProjectStage: 1,
+        CheckerWork: 2,
+        ProjectCompleted: 3,
+        ProjectNonCompleted: 4,
+        SuccessfullyClosed: 5,
+        UnsuccessfullyClosed: 6
     }
 
     const STARTER = accounts[0]
@@ -105,44 +106,49 @@ contract('ProjectValidation', (accounts) => {
 
     it("#8 should reject to complete project if no necessary signatures", async() => {
         await project.sign({from: STARTER})
-        let completed = await project.projectCompleted.call()
-        completed.should.be.equal(false)
+        await project.stopCollectSignatures()
+        await project.tryToCompleteProject()
+        let stage = await project.stage()
+        stage.c[0].should.not.be.equal(STAGES.ProjectCompleted)
     })
 
     it("#9 should complete project", async() => {
         await project.sign({from: STARTER})
         await project.sign({from: MANAGER})
+        await project.stopCollectSignatures()
         await project.tryToCompleteProject({from: STARTER})
-        let completed = await project.projectCompleted.call()
-        completed.should.be.equal(true)
+        let stage = await project.stage()
+        stage.c[0].should.be.equal(STAGES.ProjectCompleted)
     })
 
     it("#10 should try to close project without necessary signatures and call the checker", async() => {
         let checker = await project.checker()
         checker[3].should.be.equal(false)
         await project.sign({from: STARTER})
+        await project.stopCollectSignatures()
         await project.tryToCompleteProject()
-        let closed = await project.projectClosed.call()
-        closed.should.be.equal(false)
         let checkerInfo = await project.checker()
         checkerInfo[3].should.be.equal(true)
+        let stage = await project.stage()
+        stage.c[0].should.be.equal(STAGES.CheckerWork)
     })
 
     it("#11 should be right stages", async() => {
         let stage1 = await project.stage.call()
-        stage1.c[0].should.be.equal(STAGES.collectingSignatures)
+        stage1.c[0].should.be.equal(STAGES.CollectingSignatures)
+        await project.stopCollectSignatures()
         await project.tryToCompleteProject({from: STARTER})
         let stage2 = await project.stage.call()
-        stage2.c[0].should.be.equal(STAGES.checkerWork)
+        stage2.c[0].should.be.equal(STAGES.CheckerWork)
         await project.checkerSign(true, {from: CHECKER})
         let stage3 = await project.stage.call()
-        stage3.c[0].should.be.equal(STAGES.readyToComplete)
+        stage3.c[0].should.be.equal(STAGES.TryToCompleteProjectStage)
         await project.tryToCompleteProject()
         let stage4 = await project.stage.call()
-        stage4.c[0].should.be.equal(STAGES.closing)
-        await project.closeProject()
+        stage4.c[0].should.be.equal(STAGES.ProjectCompleted)
+        await project.tryToCloseProject()
         let stage5 = await project.stage.call()
-        stage5.c[0].should.be.equal(STAGES.successfullyClosed)
+        stage5.c[0].should.be.equal(STAGES.SuccessfullyClosed)
     })
 
     it("#12 should success to complete project and distribute tokens", async() => {
@@ -155,10 +161,11 @@ contract('ProjectValidation', (accounts) => {
         await project.changeWorkerBalance(WORKERS[1], SECOND_WORKER_AMOUNT)
         await project.sign({from: STARTER})
         await project.sign({from: MANAGER})
+        await project.stopCollectSignatures()
         await project.tryToCompleteProject({from: STARTER})
-        await project.closeProject({from: STARTER})
+        await project.tryToCloseProject({from: STARTER})
         let stage = await project.stage.call()
-        stage.c[0].should.be.equal(STAGES.successfullyClosed)
+        stage.c[0].should.be.equal(STAGES.SuccessfullyClosed)
         let expectedRootsBalance = await project.amountForRoots.call()
         await project.sendTokensToWorkers(0, WORKERS.length, {from: STARTER})
         let workerBalance1 = await fundToken.balanceOf(WORKERS[0])
@@ -178,12 +185,13 @@ contract('ProjectValidation', (accounts) => {
         let projectBalance = await fundToken.balanceOf(project.address)
         projectBalance.toNumber().should.be.equal(AMOUNT)
         await project.sign({from: MANAGER})
+        await project.stopCollectSignatures()
         await project.tryToCompleteProject({from: STARTER})
         await project.checkerSign(false, {from: CHECKER})
         await project.tryToCompleteProject({from: CHECKER})
-        await project.closeProject({from: CHECKER})
+        await project.tryToCloseProject({from: CHECKER})
         let stage = await project.stage.call()
-        stage.c[0].should.be.equal(STAGES.unsuccessfullyClosed)
+        stage.c[0].should.be.equal(STAGES.UnsuccessfullyClosed)
         await project.sendTokensBack({from: CHECKER})
         starterBalance = await fundToken.balanceOf(STARTER)
         projectBalance = await fundToken.balanceOf(project.address)
