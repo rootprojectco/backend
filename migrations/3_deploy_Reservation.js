@@ -6,27 +6,23 @@ let Reservation = artifacts.require("reservation/Reservation.sol")
 
 module.exports = (deployer, network) => {
     if (network == 'live') {
-        const RATE0 = 10000
-        const RATE1 = 11000
-        const RATE2 = 12000
+        const NEW_RATE_TIME = 1508025600
+        const RATE1 = 12500
+        const RATE2 = 11500
         const MINIMUM_WEI_AMOUNT = 1 // 1 wei
-        const THRESHOLD1 = new BigNumber(web3.toWei(50, 'ether'))
-        const THRESHOLD2 = new BigNumber(web3.toWei(300, 'ether'))
         const HARD_CAP = new BigNumber(10).pow(8 + 18).mul(15) // + decimals
         const MINIMUM_FUNDING_GOAL = 1
         const WALLET = '0x6fE56527Be2AAf18347dd772fc333504B83c4447'
         const NOW = web3.eth.getBlock(web3.eth.blockNumber).timestamp
         const START = NOW
-        const STOP = 1504569600 //  Tuesday, September 5, 2017 00:00:00 UTC
+        const STOP = 1510617600 //  Monday, November 14, 2017 00:00:00 UTC
 
         deployer.deploy(
             PricingStrategy,
-            RATE0,
+            NEW_RATE_TIME,
             RATE1,
             RATE2,
             MINIMUM_WEI_AMOUNT,
-            THRESHOLD1,
-            THRESHOLD2
         )
             .then(() => deployer.deploy(IouRootsReservationToken, 'ROOTS Reservation', 'RR', 18))
             .then(deployer.deploy(
@@ -42,12 +38,10 @@ module.exports = (deployer, network) => {
 
     }
     else {
-        const RATE0 = 10000
-        const RATE1 = 11000
-        const RATE2 = 12000
+        const NEW_RATE_TIME = 1508025600
+        const RATE1 = 12500
+        const RATE2 = 11500
         const MINIMUM_WEI_AMOUNT = new BigNumber(web3.toWei(0.001, 'ether'))
-        const THRESHOLD1 = new BigNumber(web3.toWei(50, 'ether'))
-        const THRESHOLD2 = new BigNumber(web3.toWei(300, 'ether'))
         const HARD_CAP = new BigNumber(1).pow(9 + 18) // + decimals
         const MINIMUM_FUNDING_GOAL = 100
         const WALLET = '0x001D51cDC8f4B378e136642DdB95Dfc4fF6a4B72'
@@ -56,12 +50,10 @@ module.exports = (deployer, network) => {
 
         deployer.deploy(
             PricingStrategy,
-            RATE0,
+            NEW_RATE_TIME,
             RATE1,
             RATE2,
             MINIMUM_WEI_AMOUNT,
-            THRESHOLD1,
-            THRESHOLD2
         )
             .then(() => deployer.deploy(IouRootsReservationToken, 'PRESALE ROOTS IOU', 'IOR', 18))
             .then(() => deployer.deploy(

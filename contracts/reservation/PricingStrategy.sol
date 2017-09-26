@@ -7,36 +7,26 @@ contract PricingStrategy {
 
     using SafeMath for uint;
 
-    uint public rate0;
+    uint public newRateTime;
     uint public rate1;
     uint public rate2;
-
-    uint public threshold1;
-    uint public threshold2;
-
     uint public minimumWeiAmount;
 
     function PricingStrategy(
-        uint _rate0,
+        uint _newRateTime,
         uint _rate1,
         uint _rate2,
-        uint _minimumWeiAmount,
-        uint _threshold1,
-        uint _threshold2
+        uint _minimumWeiAmount
     ) {
-        require(_rate0 > 0);
+        require(_newRateTime > 0);
         require(_rate1 > 0);
         require(_rate2 > 0);
         require(_minimumWeiAmount > 0);
-        require(_threshold1 > 0);
-        require(_threshold2 > 0);
 
-        rate0 = _rate0;
+        newRateTime = _newRateTime;
         rate1 = _rate1;
         rate2 = _rate2;
         minimumWeiAmount = _minimumWeiAmount;
-        threshold1 = _threshold1;
-        threshold2 = _threshold2;
     }
 
     /** Interface declaration. */
@@ -49,15 +39,11 @@ contract PricingStrategy {
         uint bonusRate = 0;
 
         if (weiAmount >= minimumWeiAmount) {
-            bonusRate = rate0;
-        }
-
-        if (weiAmount >= threshold1) {
-            bonusRate = rate1;
-        }
-
-        if (weiAmount >= threshold2) {
-            bonusRate = rate2;
+            if (now < newRateTime) {
+                bonusRate = rate1;
+            } else {
+                bonusRate = rate2;
+            }
         }
 
         return weiAmount.mul(bonusRate);
