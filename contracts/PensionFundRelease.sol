@@ -2,6 +2,7 @@ pragma solidity ^0.4.10;
 
 import "zeppelin-solidity/contracts/token/SimpleToken.sol";
 import "zeppelin-solidity/contracts/token/ERC20Basic.sol";
+import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 
 
 contract PensionFundRelease {
