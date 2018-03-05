@@ -3,6 +3,8 @@
 RootProject is a crowdfunding platform for social projects powered by a crypto currency.
 
 Website: https://rootproject.co
+Telegram: https://t.me/Rootproject
+E-mail: info@rootproject.co
 
 ### Smart Contracts
 Smart Contract I: ProjectValidation - under construction.
