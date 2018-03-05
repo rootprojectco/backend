@@ -1,3 +1,5 @@
+//IOU ROOTS tokens will be exchanged into ROOTS tokens during the ICO
+
 let IouRootsToken = artifacts.require("./IouRootsToken.sol")
 
 module.exports = (deployer, network) => {
