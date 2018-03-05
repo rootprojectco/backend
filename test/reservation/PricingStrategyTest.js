@@ -1,3 +1,5 @@
+//RR tokens used during October 2017 presale
+
 let BigNumber = require('bignumber.js');
 
 let PricingStrategy = artifacts.require("reservation/PricingStrategy.sol")
